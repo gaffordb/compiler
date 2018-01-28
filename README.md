@@ -1,5 +1,5 @@
 # Compiler
-##### Ben Gafford
+#### Created by Ben Gafford
 Compiler (being) built in C++.  
 More details to come in the future.  
 
