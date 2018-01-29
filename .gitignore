@@ -31,4 +31,4 @@
 *.app
 
 # Bin
-bin/*
+bin/
