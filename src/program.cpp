@@ -25,10 +25,10 @@ int main(int argc, char **argv) {
   if(c != -1) {
     switch(c) {
     case 'h':
-      printf("Usage: %s, [flags] [args]\n", argv[0]);
-      printf("Available flags:\n-length\tprints the lengths");
+      printf("Usage: program [flags] [args]\n");
+      printf("Available flags:\n--length\tprints the lengths");
       printf(" of each of the arguments\n");
-      printf("-help\tprints the help message\n");
+      printf("--help\tprints the help message\n");
       return 0;
       break;
     case 'l':

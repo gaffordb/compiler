@@ -1,0 +1,4 @@
+Usage: program [flags] [args]
+Available flags:
+--length	prints the lengths of each of the arguments
+--help	prints the help message
