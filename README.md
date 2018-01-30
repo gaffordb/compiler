@@ -16,8 +16,8 @@ More details to come in the future.
 ```
 program [flags] [args]  
 Available flags:  
-  -length	prints the lengths of each of the arguments  
-  -help	    prints the help message
+  -length   prints the lengths of each of the arguments  
+  -help     prints the help message
 ``` 
 
 ## Changelog
