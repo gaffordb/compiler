@@ -1,4 +1,4 @@
 ROOT = ..
-TARGETS = program
+TARGETS = driver
 
 include $(ROOT)/common.mk
