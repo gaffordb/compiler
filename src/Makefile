@@ -1,4 +1,4 @@
 ROOT = ..
-TARGETS = program
+TARGETS = program lex
 
 include $(ROOT)/common.mk
