@@ -8,6 +8,7 @@
 #include <vector>
 #include <fstream>
 #include "lex.h"
+#include "error.h"
 
 using namespace std;
 
@@ -29,12 +30,39 @@ Token::Token(TokenType t, float f) {
   this->data.f = f;
 }
 
+//constructor for bool-based tokens
+Token::Token(TokenType t, bool b) {
+  this->type = t;
+  this->data.b = b;
+}
+
+bool isOperator(Token& t) {
+  TokenType type = t.type;
+  return type == tplus
+  || type == tminus
+  || type == tmult
+  || type == tdiv
+  || type == tif
+  || type == tlequal;
+}
+
 std::ostream& operator<<(std::ostream &strm, Token const& token) {
   switch(token.type) {
+    case tminus:
+    case tmult:
+    case tdiv:
     case tlparen:
     case trparen:
     case tplus: {
       strm << token.data.ch;
+      break;
+    }
+    case tif: {
+      strm << "if";
+      break;
+    }
+    case tlequal: {
+      strm << "<=";
       break;
     }
     case tfloat: {
@@ -45,8 +73,11 @@ std::ostream& operator<<(std::ostream &strm, Token const& token) {
       strm << token.data.i;
       break;
     }
-    default: fprintf(stderr, "Invalid token type");
-    exit(EXIT_FAILURE);
+    case tbool: {
+      strm << token.data.b;
+      break;
+    }
+    print_error("Invalid token type. Exiting.\n");
   }
   return strm;
 }
@@ -54,15 +85,20 @@ std::ostream& operator<<(std::ostream &strm, Token const& token) {
 shared_ptr<vector<Token> > Token::lex(std::ifstream& in) {
   vector<Token> vec;
   shared_ptr<vector<Token> > toklist_ptr = make_shared<vector<Token> >(vec);
-  while(!in.eof()) {
+  while(1) {
     char cur = in.get();
-    //dealin' with numbers
+    if(in.eof()) {
+      return toklist_ptr;
+    }
     if(isdigit(cur)) {
       string num;
-      while(isdigit(cur)) {
+
+      //read the rest of the number
+      while(!in.eof() && isdigit(cur)) {
         num += cur;
         cur = in.get();
       }
+
       in.unget();
       toklist_ptr->push_back(Token(tint, atoi(num.c_str())));
 
@@ -81,11 +117,78 @@ shared_ptr<vector<Token> > Token::lex(std::ifstream& in) {
           toklist_ptr->push_back(Token(tplus, '+'));
           break;
         }
-        default:
-        //whitespace, advance cur
-        break;
+        case '*': {
+          toklist_ptr->push_back(Token(tmult, '*'));
+          break;
+        }
+        case '/': {
+          toklist_ptr->push_back(Token(tdiv, '/'));
+          break;
+        }
+        case '-': {
+          toklist_ptr->push_back(Token(tminus, '-'));
+          break;
+        }
+
+        //true token
+        case 't': {
+          if(in.get() == 'r'
+          && in.get() == 'u'
+          && in.get() == 'e') {
+            toklist_ptr->push_back(Token(tbool, true));
+            break;
+          } else {
+            print_error("Unexpected character sequence. Exiting.\n");
+          }
+        }
+
+        //false token
+        case 'f': {
+          if(in.get() == 'a'
+          && in.get() == 'l'
+          && in.get() == 's'
+          && in.get() == 'e') {
+            toklist_ptr->push_back(Token(tbool, false));
+            break;
+          } else {
+            print_error("Unexpected character sequence. Exiting.\n");
+          }
+        }
+
+        //if token
+        case 'i': {
+          if(in.get() == 'f') {
+            //just using ? as the if token representation rather than string
+            //needs to be changed if ternary if is added to language
+            toklist_ptr->push_back(Token(tif, '?'));
+            break;
+          } else {
+            in.unget();
+            print_error("Unexpected character sequence. Exiting.\n");
+          }
+        }
+
+        //lequal token
+        case '<': {
+          if(in.get() == '=') {
+            toklist_ptr->push_back(Token(tlequal, '<'));
+            break;
+          } else { //THIS NEEDS TO BE CHANGED IF '<' gets added to language
+          in.unget();
+          print_error("Unexpected character sequence. Exiting.\n");
+        }
       }
+      case ' ':
+      case '\t':
+      case '\r':
+      case '\n':
+      //whitespace, advance cur
+      break;
+      default:
+      print_error("Unexpected character sequence. Exiting.\n");
+      break;
     }
   }
-  return toklist_ptr;
+}
+return toklist_ptr;
 }

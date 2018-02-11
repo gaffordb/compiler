@@ -5,9 +5,11 @@ union TokenData {
   char ch;
   float f;
   int i;
+  bool b;
 };
 enum TokenType {
-  tlparen, trparen, tplus, tfloat, tint
+  tlparen, trparen, tplus, tminus, tmult, tdiv,
+  tfloat, tint, tbool, tif, tlequal
 };
 
 class Token {
@@ -24,10 +26,13 @@ public:
   //constructor for float-based tokens
   Token(TokenType t, float f);
 
-  friend std::ostream& operator<<(std::ostream &strm, Token const& token);
+  //constructor for bool-based tokens
+  Token(TokenType t, bool b);
 
-  static std::shared_ptr<std::vector<Token> > lex(std::ifstream& in);
   friend std::ostream& operator<<(std::ostream &strm, Token const& token);
+  static std::shared_ptr<std::vector<Token> > lex(std::ifstream& in);
 };
+
+bool isOperator(Token& t);
 
 #endif
