@@ -20,11 +20,25 @@ namespace Parse {
 
   class Lit : public Exp {
   public:
-    int data;
-    Lit(int data);
-    int interpret(void);
+    virtual int interpret(void){return 0;}
+    //thismaybebad
+    virtual bool interpret(void){return false;}
+    virtual ~Lit(){};
   };
 
+  class BLit : public Lit {
+  public:
+    bool data;
+    int interpret(void); //this should throw an error if called
+    bool interpret(void);
+  };
+
+  class ILit : public Lit {
+  public:
+    int data;
+    int interpret(void);
+    bool interpret(void); //this should throw an error if called
+  };
   class Operator : public Exp {
   public:
     std::shared_ptr<Exp> e1, e2;

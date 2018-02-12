@@ -6,7 +6,12 @@ using namespace std;
 Parse::Lit::Lit(int data) {
   this->data = data;
 }
-
+Parse::BLit::BLit(bool data) {
+  this->data = data;
+}
+Parse::ILit::ILit(int data) {
+  this->data = data;
+}
 Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
   std::shared_ptr<Exp> e3){
     this->e1 = e1;
@@ -45,19 +50,11 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
   }
 
 
-  int Parse::Lit::interpret(void) {
-    return this->data;
-  }
   int Parse::Operator::interpret(void) {
     print_error("This should not happen. Trying to interpret raw op.\n");
     return -12;
   }
-  /*
-  int Parse::Exp::interpret(void) {
-    print_error("This should not happen. Trying to interpret raw exp.\n");
-    return -13;
-  }
-  */
+
   int Parse::Plus::interpret(void) {
     return this->e1->interpret() + this->e2->interpret();
   }
@@ -89,9 +86,8 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
     }
   }
 
-  int Parse::Lequal::interpret(void) {
-    //need to typecheck left and right... :(
-    int left = this->e1->interpret();
+  bool Parse::Lequal::interpret(void) {
+    int left = this->e1->interpret();//but you can't override return types...
     int right = this->e2->interpret();
     return left <= right;
   }
@@ -140,10 +136,11 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
           break;
         }
         case tif: {
-          printf("Have to deal with this...");
+          print_error("Error. Expected non-if operator. Exiting.");
           //Parse::Ifop o(e1, e2);
-          Parse::Divide o(e1, e2);
-          return make_shared<Parse::Divide>(o);;
+          exit(1);
+          Parse::Ifop o(e1, e2);
+          return make_shared<Parse::Ifop>(o);;
           break;
         }
         case tlequal: {
@@ -168,6 +165,11 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
             Parse::Lit l(t.data.i);
             return make_shared<Parse::Lit>(l);
           }
+          case tbool: {
+            advance();
+            Parse::Lit l(t.data.b, true);
+            return make_shared<Parse::Lit>(l);
+          }
           case tlparen: {
             //consume lparen
             advance();
@@ -180,13 +182,20 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
 
             shared_ptr<Exp> e2 = make_shared<Parse::Exp>();
             e2 = parse();
+            if(curop == tif) {
+              shared_ptr<Exp> e3 = make_shared<Parse::Exp>();
+              e3 = parse();
+              Parse::Ifop o(e1, e2, e3);
+              advance();
+              return make_shared<Parse::Ifop>(o);
+            } else {
+              shared_ptr<Parse::Operator> o = Parse::instantiate_operator(curop, e1, e2);
 
-            shared_ptr<Parse::Operator> o = Parse::instantiate_operator(curop, e1, e2);
+              //consume lparen
+              advance();
 
-            //consume lparen
-            advance();
-
-            return o;
+              return o;
+            }
           }
           default:
           print_error("Unexpected token found. Exiting.\n");
