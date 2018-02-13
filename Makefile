@@ -1,4 +1,4 @@
 ROOT = .
-DIRS = src src2
+DIRS = src
 
 include $(ROOT)/common.mk
