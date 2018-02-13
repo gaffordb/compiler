@@ -1,95 +1,144 @@
 #include "parse.h"
 #include "error.h"
+#include <string>
 
 using namespace std;
 
-Parse::Lit::Lit(int data) {
+Parse::Lit::Lit(string data) {
   this->data = data;
 }
-Parse::BLit::BLit(bool data) {
-  this->data = data;
-}
-Parse::ILit::ILit(int data) {
-  this->data = data;
-}
+
 Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
-  std::shared_ptr<Exp> e3){
+  std::shared_ptr<Exp> e3) {
     this->e1 = e1;
     this->e2 = e2;
     this->e3 = e3;
   }
 
-  //c++ sux
-  Parse::Plus::Plus(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2){
+  Parse::Plus::Plus(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2) {
     this->e1 = e1;
     this->e2 = e2;
   }
 
-  Parse::Minus::Minus(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2)
-  {
+  Parse::Minus::Minus(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2) {
     this->e1 = e1;
     this->e2 = e2;
   }
 
-  Parse::Divide::Divide(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2)
-  {
+  Parse::Divide::Divide(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2) {
     this->e1 = e1;
     this->e2 = e2;
   }
 
-  Parse::Multiply::Multiply(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2)
-  {
+  Parse::Multiply::Multiply(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2) {
     this->e1 = e1;
     this->e2 = e2;
   }
 
-  Parse::Lequal::Lequal(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2)
-  {
+  Parse::Lequal::Lequal(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2) {
     this->e1 = e1;
     this->e2 = e2;
   }
 
-
-  int Parse::Operator::interpret(void) {
+  std::string Parse::Operator::interpret(void) {
     print_error("This should not happen. Trying to interpret raw op.\n");
-    return -12;
+    return "exit() in print_error, so this can't be reached...";
   }
 
-  int Parse::Plus::interpret(void) {
-    return this->e1->interpret() + this->e2->interpret();
+  bool Parse::validInt(string& s) {
+    return isdigit(s.at(0)) || s.at(0) == '-';
+  }
+  bool Parse::validBool(string& s) {
+    return (s == "true" || s == "false");
   }
 
-  int Parse::Minus::interpret(void) {
-    return this->e1->interpret() - this->e2->interpret();
-  }
+  std::string Parse::Plus::interpret(void) {
+    std::string val1 = this->e1->interpret();
+    std::string val2 = this->e2->interpret();
 
-  int Parse::Multiply::interpret(void) {
-    return this->e1->interpret() * this->e2->interpret();
-  }
-
-  int Parse::Divide::interpret(void) {
-    if(this->e2->interpret() == 0) {
-      print_error("Error: Cannot divide by zero. Exiting.\n");
-    }
-    return this->e1->interpret() / this->e2->interpret();
-  }
-
-  int Parse::Ifop::interpret(void) {
-    //need to typecheck left and right... :(
-    bool cond = this->e1->interpret();
-    int left = this->e2->interpret();
-    int right = this->e3->interpret();
-    if(cond) {
-      return left;
+    if(validInt(val1) && validInt(val2)) {
+      return to_string((stoi(val1) + stoi(val2)));
     } else {
-      return right;
+      print_error("Error. Cannot add boolean expression(s).\n");
+      return "";
     }
   }
 
-  bool Parse::Lequal::interpret(void) {
-    int left = this->e1->interpret();//but you can't override return types...
-    int right = this->e2->interpret();
-    return left <= right;
+  std::string Parse::Minus::interpret(void) {
+    std::string val1 = this->e1->interpret();
+    std::string val2 = this->e2->interpret();
+
+    if(validInt(val1) && validInt(val2)) {
+      return to_string((stoi(val1) - stoi(val2)));
+    } else {
+      print_error("Error. Cannot subtract boolean expression(s).\n");
+      return "";
+    }
+  }
+
+  std::string Parse::Multiply::interpret(void) {
+    std::string val1 = this->e1->interpret();
+    std::string val2 = this->e2->interpret();
+
+    if(validInt(val1) && validInt(val2)) {
+      return to_string((stoi(val1) * stoi(val2)));
+    } else {
+      print_error("Error. Cannot multiply boolean expression(s).\n");
+      return "";
+    }
+  }
+
+  std::string Parse::Divide::interpret(void) {
+    std::string val1 = this->e1->interpret();
+    std::string val2 = this->e2->interpret();
+
+    if(validInt(val1) && validInt(val2)) {
+      if(stoi(val2) == 0) {
+        print_error("Error. Cannot divide by zero.\n");
+      }
+      return to_string((stoi(val1) / stoi(val2)));
+    } else {
+      print_error("Error. Cannot add boolean expression(s).\n");
+      return "";
+    }
+  }
+
+  std::string Parse::Ifop::interpret(void) {
+    string val1 = this->e1->interpret();
+    string val2 = this->e2->interpret();
+    string val3 = this->e3->interpret();
+    bool cond;
+    if(validBool(val1)) {
+      cond = val1.at(0) == 't' ? true : false;
+    } else if(validInt(val1)){
+      cond = stoi(val1);
+    } else {
+      print_error("Error. Invalid argument(s) to if.\n");
+    }
+    if((validInt(val2) || validBool(val2)) && (validInt(val3) || validBool(val3))) {
+      int left = stoi(val2);
+      int right = stoi(val3);
+      return cond ? val2 : val3;
+    }
+    else {
+      print_error("Error. Invalid argument(s) to if.\n");
+      return "";
+    }
+  }
+
+  std::string Parse::Lequal::interpret(void) {
+    string left = this->e1->interpret();
+    string right = this->e2->interpret();
+
+    if(validInt(left) && validInt(right)) {
+      return (stoi(left) <= stoi(right)) ? "true" : "false";
+    } else {
+      print_error("Error. Cannot compare boolean expression(s).\n");
+      return "";
+    }
+  }
+  std::string Parse::Lit::interpret(void) {
+    return this->data;
   }
 
   void Parse::Parser::advance(void) {
@@ -135,14 +184,6 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
           return make_shared<Parse::Divide>(o);;
           break;
         }
-        case tif: {
-          print_error("Error. Expected non-if operator. Exiting.");
-          //Parse::Ifop o(e1, e2);
-          exit(1);
-          Parse::Ifop o(e1, e2);
-          return make_shared<Parse::Ifop>(o);;
-          break;
-        }
         case tlequal: {
           Parse::Lequal o(e1, e2);
           return make_shared<Parse::Lequal>(o);;
@@ -162,12 +203,12 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
         switch(t.type) {
           case tint: {
             advance();
-            Parse::Lit l(t.data.i);
+            Parse::Lit l(to_string(t.data.i));
             return make_shared<Parse::Lit>(l);
           }
           case tbool: {
             advance();
-            Parse::Lit l(t.data.b, true);
+            Parse::Lit l(to_string(t.data.b));
             return make_shared<Parse::Lit>(l);
           }
           case tlparen: {
@@ -182,15 +223,17 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
 
             shared_ptr<Exp> e2 = make_shared<Parse::Exp>();
             e2 = parse();
+
             if(curop == tif) {
               shared_ptr<Exp> e3 = make_shared<Parse::Exp>();
               e3 = parse();
               Parse::Ifop o(e1, e2, e3);
+
+              //consume lparen
               advance();
               return make_shared<Parse::Ifop>(o);
             } else {
               shared_ptr<Parse::Operator> o = Parse::instantiate_operator(curop, e1, e2);
-
               //consume lparen
               advance();
 

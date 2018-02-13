@@ -1,3 +1,5 @@
+##TEMPLATE BASED OFF OF COMMON.MK FROM CHARLIE CURTSINGER##
+
 # Build with clang
 CC  := gcc
 CXX := g++
@@ -39,10 +41,10 @@ clean::
 #
 test::
 
-testit::
-	make all; $(ROOT)/test/run-tests.sh;
+build::
+	make all; $(ROOT)/test/run-tests.sh; $(ROOT)/test/run-parse-tests.sh;
 # Prevent errors if files named all, clean, bench, or test exist
-.PHONY: all clean test testit
+.PHONY: all clean test build
 
 # Compile a C++ source file (and generate its dependency rules)
 obj/%.o: %.cpp $(PREREQS)

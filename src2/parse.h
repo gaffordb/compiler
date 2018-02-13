@@ -8,65 +8,53 @@
 #include <getopt.h>
 #include <stdbool.h>
 #include <vector>
+#include <string>
 #include "lex.h"
 
 namespace Parse {
   class Exp {
   public:
-    //Exp();
-    virtual int interpret(void){return 0;}
-    virtual ~Exp(){};
+    virtual std::string interpret(void){return "dicks";}
   };
 
   class Lit : public Exp {
   public:
-    virtual int interpret(void){return 0;}
-    //thismaybebad
-    virtual bool interpret(void){return false;}
-    virtual ~Lit(){};
+    Lit(std::string data);
+    std::string data;
+    std::string interpret(void);
   };
 
-  class BLit : public Lit {
-  public:
-    bool data;
-    int interpret(void); //this should throw an error if called
-    bool interpret(void);
-  };
+  bool validInt(std::string& s);
+  bool validBool(std::string& s);
 
-  class ILit : public Lit {
-  public:
-    int data;
-    int interpret(void);
-    bool interpret(void); //this should throw an error if called
-  };
   class Operator : public Exp {
   public:
     std::shared_ptr<Exp> e1, e2;
-    int interpret(void);
+    std::string interpret(void);
   };
 
   class Plus : public Operator {
   public:
     Plus(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2);
-    int interpret(void);
+    std::string interpret(void);
   };
 
   class Minus : public Operator {
   public:
     Minus(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2);
-    int interpret(void);
+    std::string interpret(void);
   };
 
   class Multiply : public Operator {
   public:
     Multiply(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2);
-    int interpret(void);
+    std::string interpret(void);
   };
 
   class Divide : public Operator {
   public:
     Divide(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2);
-    int interpret(void);
+    std::string interpret(void);
   };
 
   //this is special tho! add another expression!
@@ -75,13 +63,13 @@ namespace Parse {
     std::shared_ptr<Exp> e3;
     Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
       std::shared_ptr<Exp> e3);
-      int interpret(void);
+      std::string interpret(void);
     };
 
     class Lequal : public Operator {
     public:
       Lequal(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2);
-      int interpret(void);
+      std::string interpret(void);
     };
 
     class Parser {
@@ -98,6 +86,5 @@ namespace Parse {
       std::shared_ptr<Exp> e2);
 
     }
-
 
     #endif
