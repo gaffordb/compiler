@@ -1,4 +1,3 @@
 #!/bin/sh
-pwd
 cppcheck -q --error-exitcode=1 --file-list=tocheck.txt
 make build
