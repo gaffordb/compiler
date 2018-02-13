@@ -1,4 +1,4 @@
-../src/program.cpp
-../src/parser/driver.cpp
-../src/parser/parse.cpp
-../src/parser/lex.cpp
+src/program.cpp
+src/parser/driver.cpp
+src/parser/parse.cpp
+src/parser/lex.cpp
