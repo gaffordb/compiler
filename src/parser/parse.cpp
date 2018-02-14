@@ -5,7 +5,13 @@
 using namespace std;
 
 Parse::Lit::Lit(string data) {
-  this->data = data;
+  if(data.at(0) == 't') {
+    this->data = "true";
+  } else if(data.at(0) == 'f') {
+    this->data = "false";
+  } else {
+    this->data = data;
+  }
 }
 
 Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
@@ -49,7 +55,7 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
     return isdigit(s.at(0)) || s.at(0) == '-';
   }
   bool Parse::validBool(string& s) {
-    return (s == "true" || s == "false");
+    return (s.at(0) == 't' || s.at(0) == 'f');
   }
 
   std::string Parse::Plus::interpret(void) {
@@ -109,15 +115,11 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
     string val3 = this->e3->interpret();
     bool cond;
     if(validBool(val1)) {
-      cond = val1.at(0) == 't' ? true : false;
-    } else if(validInt(val1)){
-      cond = stoi(val1);
+      cond = val1.at(0) == 't';
     } else {
       print_error("Error. Invalid argument(s) to if.\n");
     }
     if((validInt(val2) || validBool(val2)) && (validInt(val3) || validBool(val3))) {
-      int left = stoi(val2);
-      int right = stoi(val3);
       return cond ? val2 : val3;
     }
     else {
@@ -138,7 +140,13 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
     }
   }
   std::string Parse::Lit::interpret(void) {
-    return this->data;
+    if(this->data.at(0) == 'f') {
+      return "false";
+    } else if(this->data.at(0) == 't') {
+      return "true";
+    } else {
+      return this->data;
+    }
   }
 
   void Parse::Parser::advance(void) {
@@ -199,7 +207,6 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
     shared_ptr<Parse::Exp> Parse::Parser::parse(void) {
       if(pos < ptoks->size()) {
         Token t = ptoks->at(pos);
-        //cout << "Munchin' on: " << t << endl;
         switch(t.type) {
           case tint: {
             advance();
@@ -208,7 +215,7 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
           }
           case tbool: {
             advance();
-            Parse::Lit l(to_string(t.data.b));
+            Parse::Lit l(string(1, t.data.ch));
             return make_shared<Parse::Lit>(l);
           }
           case tlparen: {
@@ -216,7 +223,6 @@ Parse::Ifop::Ifop(std::shared_ptr<Exp> e1, std::shared_ptr<Exp> e2,
             advance();
 
             TokenType curop = consume(ptoks->at(pos));
-            //t = ptoks->at(pos);
 
             shared_ptr<Exp> e1 = make_shared<Parse::Exp>();
             e1 = parse();

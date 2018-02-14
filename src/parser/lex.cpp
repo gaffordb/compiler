@@ -12,7 +12,7 @@
 
 using namespace std;
 
-//constructor for char-based tokens
+//constructor for char-based and bool-based tokens
 Token::Token(TokenType t, char ch) {
   this->type = t;
   this->data.ch = ch;
@@ -28,12 +28,6 @@ Token::Token(TokenType t, int n) {
 Token::Token(TokenType t, float f) {
   this->type = t;
   this->data.f = f;
-}
-
-//constructor for bool-based tokens
-Token::Token(TokenType t, bool b) {
-  this->type = t;
-  this->data.b = b;
 }
 
 bool isOperator(Token& t) {
@@ -135,7 +129,7 @@ shared_ptr<vector<Token> > Token::lex(std::ifstream& in) {
           if(in.get() == 'r'
           && in.get() == 'u'
           && in.get() == 'e') {
-            toklist_ptr->push_back(Token(tbool, true));
+            toklist_ptr->push_back(Token(tbool, 't'));
             break;
           } else {
             print_error("Unexpected character sequence. Exiting.\n");
@@ -148,7 +142,7 @@ shared_ptr<vector<Token> > Token::lex(std::ifstream& in) {
           && in.get() == 'l'
           && in.get() == 's'
           && in.get() == 'e') {
-            toklist_ptr->push_back(Token(tbool, false));
+            toklist_ptr->push_back(Token(tbool, 'f'));
             break;
           } else {
             print_error("Unexpected character sequence. Exiting.\n");
@@ -158,8 +152,6 @@ shared_ptr<vector<Token> > Token::lex(std::ifstream& in) {
         //if token
         case 'i': {
           if(in.get() == 'f') {
-            //just using ? as the if token representation rather than string
-            //needs to be changed if ternary if is added to language
             toklist_ptr->push_back(Token(tif, '?'));
             break;
           } else {
