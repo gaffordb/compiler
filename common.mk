@@ -42,7 +42,7 @@ clean::
 test::
 
 build::
-	touch ./bin; make all; $(ROOT)/test/run-tests.sh; $(ROOT)/test/run-parse-tests.sh;
+	mkdir -p ./bin; make all; $(ROOT)/test/run-tests.sh; $(ROOT)/test/run-parse-tests.sh;
 # Prevent errors if files named all, clean, bench, or test exist
 .PHONY: all clean test build
 
