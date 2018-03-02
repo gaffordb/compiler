@@ -548,7 +548,7 @@ int yy_flex_debug = 1;
 static yyconst flex_int16_t yy_rule_linenum[16] =
     {   0,
        28,   29,   31,   32,   33,   34,   35,   36,   37,   38,
-       39,   40,   42,   55,   63
+       39,   40,   42,   54,   62
     } ;
 
 /* The intent behind this definition is that it'll catch
@@ -995,7 +995,6 @@ case 13:
 YY_RULE_SETUP
 #line 42 "scanner.l"
 {
-  errno = 0;
   bool b;
   if(strcmp(yytext, "#t") == 0) {
     b = true;
@@ -1009,7 +1008,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 55 "scanner.l"
+#line 54 "scanner.l"
 {
     errno = 0;
     long n = strtol (yytext, NULL, 10);
@@ -1021,19 +1020,19 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 63 "scanner.l"
+#line 62 "scanner.l"
 { driver.error ("invalid character in int"); }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 64 "scanner.l"
+#line 63 "scanner.l"
 { return yy::parser::make_END(); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 65 "scanner.l"
+#line 64 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1037 "scanner.yy.cpp"
+#line 1036 "scanner.yy.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2123,7 +2122,7 @@ void yyfree (void * ptr )
 
 /* %ok-for-header */
 
-#line 65 "scanner.l"
+#line 64 "scanner.l"
 
 
 
