@@ -60,6 +60,7 @@ int main(int argc, char **argv) {
     shared_ptr<Exp> prog = driver.parse(0);
     if(bparse){
       std::cout << prog << std::endl;
+      return 0;
     }
     std::cout << prog->eval() << std::endl;
     return 0;

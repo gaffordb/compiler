@@ -59,15 +59,15 @@ prog:
   exp "eof"                  { *ret = $1; }
 
 exp:
-  "int"                      { $$ = make_shared<ELit>($1);        }
-|  "bool"                    { $$ = make_shared<ELit>($1);        }
-| "(" exp ")"                { std::swap ($$, $2);                }
-|  exp "+" exp               { $$ = make_shared<EPlus>($1, $3);   }
-|  exp "*" exp               { $$ = make_shared<EMult>($1, $3);   }
-|  "if" exp "then" exp "else" exp    { $$ = make_shared<EIf>($2, $4, $6); }
-|  exp "<=" exp              { $$ = make_shared<ELeq>($1, $3);    }
-|  exp "-" exp               { $$ = make_shared<EMinus>($1, $3);  }
-|  exp "/" exp               { $$ = make_shared<EDiv>($1, $3);    }
+  "int"                            { $$ = make_shared<ELit>($1);        }
+|  "bool"                          { $$ = make_shared<ELit>($1);        }
+| "(" exp ")"                      { std::swap ($$, $2);                }
+|  exp "+" exp                     { $$ = make_shared<EPlus>($1, $3);   }
+|  exp "*" exp                     { $$ = make_shared<EMult>($1, $3);   }
+|  "if" exp "then" exp "else" exp  { $$ = make_shared<EIf>($2, $4, $6); }
+|  exp "<=" exp                    { $$ = make_shared<ELeq>($1, $3);    }
+|  exp "-" exp                     { $$ = make_shared<EMinus>($1, $3);  }
+|  exp "/" exp                     { $$ = make_shared<EDiv>($1, $3);    }
 %%
 
 // NOTE: Bison's error reporting simply forwards to the driver

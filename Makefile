@@ -24,4 +24,4 @@ clean :
 	rm -rf ${LEX_OUTPUT}
 
 build::
-	mkdir -p ./bin; make; mv compiler $(ROOT)/bin; $(ROOT)/test/compiler-tests.sh &> /dev/null;
+	mkdir -p ./bin; make; mv compiler $(ROOT)/bin; $(ROOT)/test/compiler-tests.sh &> /dev/null; $(ROOT)/test/compiler-tests.sh &> /dev/null;
