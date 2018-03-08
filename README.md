@@ -1,17 +1,20 @@
 # Compiler
 #### Created by Ben Gafford
 Compiler (being) built in C++.  
-Currently able to parse basic S-Expressions. Full language syntax is as follows: 
-```
-e ::= n | (+ e1 e2) | (- e1 e2) | (* e1 e2) | (/ e1 e2)
-    | true | false | (<= e1 e2) | (if e1 e2 e3)
-```
 
 More details to come in the future.  
+
+## Language Syntax
+Language is defined as the following:   
+```
+e ::= n | (e) | e1 + e1 | e1 - e2 | e1 * e2 | e1 / e2
+    | true | false | e1 <= e2 | if e1 then e2 else e3
+```
 
 ## Dependencies
 * `getopt`
 * `g++`
+* `bison`
 
 ## Build Instructions
 * Clone repository onto your system.
@@ -22,29 +25,15 @@ More details to come in the future.
     `ln -s /absolute/path/to/repo/compiler/githooks/pre-commit .git/hooks/pre-commit`
     
 ## Usage
-Program:  
-* print out `args`  
-* use `flags` as indicated below  
+Compiler: 
+* parse and interpret valid expressions from text files given by `filename` 
 ```
-program [flags] [args]  
+compiler [flags] [filename]  
 Available flags:  
-  -length   prints the lengths of each of the arguments  
-  -help     prints the help message
+  --parse   compiler processes input through the parsing phase, printing the 
+  resulting abstract syntax tree in the form of an S-expression
 ``` 
-Driver:  
-* parse valid S-Expressions from text files given in `filename`  
-```
-driver [filename]
-Available flags: [none]
 
-```
-
-## Language Syntax
-Language is defined as the following:   
-```
-e ::= n | (+ e1 e2) | (- e1 e2) | (* e1 e2) | (/ e1 e2)
-    | true | false | (<= e1 e2) | (if e1 e2 e3)
-```
 ## Changelog
 ### v0.0.1 (1/29/2018)
 * Build infrastructure set up
@@ -59,3 +48,9 @@ e ::= n | (+ e1 e2) | (- e1 e2) | (* e1 e2) | (/ e1 e2)
 * Included driver.cpp, parse.cpp, lex.cpp, parse.h, lex.h.
 * Added testing for driver
 
+
+### v0.0.3 (3/08/2018)
+* Integrated lexer and parser generator
+* Language syntax changed from S-expressions to infix syntax. 
+* New test suite.
+* Added testing through the parsing stage of compilation. 
