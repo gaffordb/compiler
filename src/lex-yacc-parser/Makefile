@@ -20,3 +20,6 @@ clean :
 	rm -rf compiler
 	rm -rf ${BISON_OUTPUT} ${BISON_AUX}
 	rm -rf ${LEX_OUTPUT}
+
+	#build::
+	#	mkdir -p ./bin; make all; $(ROOT)/test/run-tests.sh; $(ROOT)/test/run-parse-tests.sh;

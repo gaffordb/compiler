@@ -1,4 +1,6 @@
-./src/program.cpp
-./src/parser/driver.cpp
-./src/parser/parse.cpp
-./src/parser/lex.cpp
+./src/lex-yacc-parser/compiler.cpp
+./src/lex-yacc-parser/lang.cpp
+./src/lex-yacc-parser/lang.h
+./src/lex-yacc-parser/parser_driver.cpp
+./src/lex-yacc-parser/parser_driver.h
+

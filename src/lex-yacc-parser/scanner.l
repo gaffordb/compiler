@@ -28,6 +28,7 @@ blank [ \t]
 {blank}+    { }
 [\n]+       { }
 
+"eof"       { exit(0); }
 "+"         { return yy::parser::make_PLUS(); }
 "-"         { return yy::parser::make_MINUS(); }
 "/"         { return yy::parser::make_DIVIDE(); }
