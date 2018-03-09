@@ -15,6 +15,7 @@ e ::= n | (e) | e1 + e1 | e1 - e2 | e1 * e2 | e1 / e2
 * `getopt`
 * `g++`
 * `bison`
+* `flex`
 
 ## Build Instructions
 * Clone repository onto your system.
