@@ -42,12 +42,18 @@ using namespace std;
   THEN        "then"
   ELSE        "else"
   LEQUAL      "<="
+  LET         "let"
+  FUN         "fun"
+  EQUALS      "="
+  IN          "in"
+  RARROW      "->"
   LPAREN      "("
   RPAREN      ")"
 ;
 
 %token <int> INT "int"
 %token <bool> BOOL "bool"
+%token <char*> VAR "var"
 %type  < shared_ptr<Exp> > exp
 %parse-param {shared_ptr<Exp> *ret}
 
@@ -60,7 +66,11 @@ prog:
 
 exp:
   "int"                            { $$ = make_shared<ELit>($1);        }
-|  "bool"                          { $$ = make_shared<ELit>($1);        }
+| "bool"                           { $$ = make_shared<ELit>($1);        }
+| "var"                            { $$ = make_shared<EVar>($1);        }
+| "let" "var" "=" exp "in" exp     { $$ = make_shared<ELet>(make_shared<EVar>($2), $4, $6);    }
+| "fun" "var" "->" exp             { $$ = make_shared<EFun>(make_shared<EVar>($2), $4);    }
+|  exp exp                         { $$ = make_shared<EApp>($1, $2);    }
 | "(" exp ")"                      { std::swap ($$, $2);                }
 |  exp "+" exp                     { $$ = make_shared<EPlus>($1, $3);   }
 |  exp "*" exp                     { $$ = make_shared<EMult>($1, $3);   }

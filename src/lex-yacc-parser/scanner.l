@@ -21,6 +21,7 @@
 id    [a-zA-Z][a-zA-Z_0-9]*
 int   [0-9]+
 bool  (#)(t|f)
+var  [:alpha:][:alnum:]*
 blank [ \t]
 
 %%
@@ -28,19 +29,31 @@ blank [ \t]
 {blank}+    { }
 [\n]+       { }
 
-"+"         { return yy::parser::make_PLUS(); }
-"-"         { return yy::parser::make_MINUS(); }
-"/"         { return yy::parser::make_DIVIDE(); }
+"+"         { return yy::parser::make_PLUS();     }
+"-"         { return yy::parser::make_MINUS();    }
+"/"         { return yy::parser::make_DIVIDE();   }
 "*"         { return yy::parser::make_MULTIPLY(); }
-"if"        { return yy::parser::make_IF(); }
-"then"      { return yy::parser::make_THEN(); }
-"else"      { return yy::parser::make_ELSE(); }
-"<="        { return yy::parser::make_LEQUAL(); }
-"("         { return yy::parser::make_LPAREN(); }
-")"         { return yy::parser::make_RPAREN(); }
+"if"        { return yy::parser::make_IF();       }
+"then"      { return yy::parser::make_THEN();     }
+"else"      { return yy::parser::make_ELSE();     }
+"<="        { return yy::parser::make_LEQUAL();   }
+"let"       { return yy::parser::make_LET();      }
+"fun"       { return yy::parser::make_FUN();      }
+"="         { return yy::parser::make_EQUALS();   }
+"in"        { return yy::parser::make_IN();       }
+"->"        { return yy::parser::make_RARROW();   }
+"("         { return yy::parser::make_LPAREN();   }
+")"         { return yy::parser::make_RPAREN();   }
 
+{id} {
+  printf("In bunk...\n");
+  //printf("%s\n", yytext);
+  const char* ret = (const char*)(yytext);
+  //printf("%s\n", ret);
+  return yy::parser::make_VAR(ret);//isbad??
+}
 {bool} {
-  bool b;
+  bool b = false;
   if(strcmp(yytext, "#t") == 0) {
     b = true;
   } else if(strcmp(yytext, "#f") == 0) {
@@ -48,7 +61,7 @@ blank [ \t]
   } else {
     driver.error("invalid character in bool");
   }
-  return yy::parser::make_BOOL(b);
+  return yy::parser::make_BOOL((char*)b);
 }
 
 {int} {
@@ -75,3 +88,7 @@ void parser_driver::scan_begin () {
 void parser_driver::scan_end () {
     fclose (yyin);
 }
+
+/*
+
+*/
