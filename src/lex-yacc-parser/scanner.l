@@ -18,12 +18,10 @@
 
 %option noyywrap nounput batch debug noinput
 
-id    [a-zA-Z][a-zA-Z_0-9]*
 int   [0-9]+
 bool  (#)(t|f)
-var  [:alpha:][:alnum:]*
 blank [ \t]
-
+var [:alpha:][:alnum:]*
 %%
 
 {blank}+    { }
@@ -45,13 +43,17 @@ blank [ \t]
 "("         { return yy::parser::make_LPAREN();   }
 ")"         { return yy::parser::make_RPAREN();   }
 
-{id} {
-  printf("In bunk...\n");
-  //printf("%s\n", yytext);
-  const char* ret = (const char*)(yytext);
-  //printf("%s\n", ret);
+{var} {
+  char *yycopy = strdup( yytext );
+  printf("strlen yytext: %zu", strlen(yycopy));
+  const char* ret = (const char*)(yycopy);
   return yy::parser::make_VAR(ret);//isbad??
 }
+
+<<EOF>> {
+  return yy::parser::make_END();
+}
+
 {bool} {
   bool b = false;
   if(strcmp(yytext, "#t") == 0) {
@@ -61,7 +63,7 @@ blank [ \t]
   } else {
     driver.error("invalid character in bool");
   }
-  return yy::parser::make_BOOL((char*)b);
+  return yy::parser::make_BOOL(b);
 }
 
 {int} {
@@ -72,8 +74,7 @@ blank [ \t]
     }
     return yy::parser::make_INT(n);
 }
-.          { driver.error ("invalid character in int"); }
-<<EOF>>    { return yy::parser::make_END(); }
+
 %%
 
 void parser_driver::scan_begin () {
@@ -84,11 +85,15 @@ void parser_driver::scan_begin () {
         error ("cannot open " + file + ": " + strerror(errno));
         exit (EXIT_FAILURE);
     }
+    /*
+    char c;
+    if((c = fgetc(yyin)) == EOF) {
+      scan_end();
+    } else {
+      ungetc(c, yyin);
+    }
+    */
 }
 void parser_driver::scan_end () {
     fclose (yyin);
 }
-
-/*
-
-*/

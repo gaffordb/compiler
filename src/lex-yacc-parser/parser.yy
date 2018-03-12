@@ -63,6 +63,7 @@ using namespace std;
 
 prog:
   exp "eof"                  { *ret = $1; }
+| "eof"                      { }
 
 exp:
   "int"                            { $$ = make_shared<ELit>($1);        }

@@ -23,4 +23,4 @@ clean :
 	rm -rf ${LEX_OUTPUT}
 #pushd $(SRCDIR); make; popd;
 build::
-	mkdir -p ./bin; make; mv compiler $(ROOT)/bin; $(ROOT)/test/compiler-tests.sh &> /dev/null; $(ROOT)/test/compiler-tests.sh &> /dev/null;
+	mkdir -p ./bin; make; mv compiler $(ROOT)/bin; $(ROOT)/test/compiler-tests.sh &> /dev/null; $(ROOT)/test/parse-tests.sh &> /dev/null;
