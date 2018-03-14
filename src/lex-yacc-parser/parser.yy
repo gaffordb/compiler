@@ -53,8 +53,9 @@ using namespace std;
 
 %token <int> INT "int"
 %token <bool> BOOL "bool"
-%token <char*> VAR "var"
+%token <const char*> VAR "var"
 %type  < shared_ptr<Exp> > exp
+%type  < shared_ptr<Exp> > exp1
 %parse-param {shared_ptr<Exp> *ret}
 
 %%
@@ -62,23 +63,29 @@ using namespace std;
 %start prog;
 
 prog:
-  exp "eof"                  { *ret = $1; }
-| "eof"                      { }
+  exp1 "eof"                  { *ret = $1; }
+| "eof"                       { }
+
+
+exp1:
+  exp1 exp                         { $$ = make_shared<EApp>($1, $2);    }
+| exp                              { std::swap ($$, $1);                }
 
 exp:
-  "int"                            { $$ = make_shared<ELit>($1);        }
+  "var"                            { $$ = make_shared<EVar>($1);        }
+| "int"                            { $$ = make_shared<ELit>($1);        }
 | "bool"                           { $$ = make_shared<ELit>($1);        }
-| "var"                            { $$ = make_shared<EVar>($1);        }
 | "let" "var" "=" exp "in" exp     { $$ = make_shared<ELet>(make_shared<EVar>($2), $4, $6);    }
 | "fun" "var" "->" exp             { $$ = make_shared<EFun>(make_shared<EVar>($2), $4);    }
-|  exp exp                         { $$ = make_shared<EApp>($1, $2);    }
-| "(" exp ")"                      { std::swap ($$, $2);                }
+| "(" exp1 ")"                     { std::swap ($$, $2);                }
 |  exp "+" exp                     { $$ = make_shared<EPlus>($1, $3);   }
 |  exp "*" exp                     { $$ = make_shared<EMult>($1, $3);   }
 |  "if" exp "then" exp "else" exp  { $$ = make_shared<EIf>($2, $4, $6); }
 |  exp "<=" exp                    { $$ = make_shared<ELeq>($1, $3);    }
 |  exp "-" exp                     { $$ = make_shared<EMinus>($1, $3);  }
 |  exp "/" exp                     { $$ = make_shared<EDiv>($1, $3);    }
+
+
 %%
 
 // NOTE: Bison's error reporting simply forwards to the driver

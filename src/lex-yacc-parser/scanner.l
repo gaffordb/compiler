@@ -16,14 +16,12 @@
 # define yywrap() 1
 %}
 
-%option noyywrap nounput batch debug noinput
+%option noyywrap nounput batch debug noinput nodefault
 
 int   [0-9]+
 bool  (#)(t|f)
 blank [ \t]
-var [:alpha:][:alnum:]*
 %%
-
 {blank}+    { }
 [\n]+       { }
 
@@ -43,11 +41,9 @@ var [:alpha:][:alnum:]*
 "("         { return yy::parser::make_LPAREN();   }
 ")"         { return yy::parser::make_RPAREN();   }
 
-{var} {
-  char *yycopy = strdup( yytext );
-  printf("strlen yytext: %zu", strlen(yycopy));
-  const char* ret = (const char*)(yycopy);
-  return yy::parser::make_VAR(ret);//isbad??
+[a-zA-Z][a-zA-Z0-9]* {
+  const char *yycopy = strdup(yytext);
+  return yy::parser::make_VAR(yycopy);
 }
 
 <<EOF>> {
@@ -74,6 +70,7 @@ var [:alpha:][:alnum:]*
     }
     return yy::parser::make_INT(n);
 }
+.	fprintf(stderr, "bad input character '%s' at line %d\n", yytext, yylineno);
 
 %%
 
@@ -85,14 +82,6 @@ void parser_driver::scan_begin () {
         error ("cannot open " + file + ": " + strerror(errno));
         exit (EXIT_FAILURE);
     }
-    /*
-    char c;
-    if((c = fgetc(yyin)) == EOF) {
-      scan_end();
-    } else {
-      ungetc(c, yyin);
-    }
-    */
 }
 void parser_driver::scan_end () {
     fclose (yyin);

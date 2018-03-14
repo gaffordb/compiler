@@ -15,6 +15,7 @@ int main(int argc, char **argv) {
   int c;
   bool blex = false;
   bool bparse = false;
+  bool step = false;
   if(argc < 2) {
     printf("usage: compiler <filename>");
   }
@@ -23,11 +24,12 @@ int main(int argc, char **argv) {
     {
       {"lex", no_argument, NULL, 'l'},
       {"parse", no_argument, NULL, 'p'},
-      {"help", no_argument, NULL, 'h'}
+      {"help", no_argument, NULL, 'h'},
+      {"step", no_argument, NULL, 's'}
     };
 
     int option_index = 0;
-    c = getopt_long (argc, argv, "::l::p::h::", long_options, &option_index);
+    c = getopt_long (argc, argv, "::l::p::h::s", long_options, &option_index);
 
     if(c != -1) {
       switch(c) {
@@ -49,6 +51,10 @@ int main(int argc, char **argv) {
           //parse
           break;
         }
+        case 's': {
+          step = true;
+          break;
+        }
         case '?': {
           break;
         }
@@ -57,7 +63,7 @@ int main(int argc, char **argv) {
       }
     }
     parser_driver driver (argv[optind]);
-    shared_ptr<Exp> prog = driver.parse(0);
+    shared_ptr<Exp> prog = driver.parse(blex);
     if(bparse){
       std::cout << prog << std::endl;
       return 0;

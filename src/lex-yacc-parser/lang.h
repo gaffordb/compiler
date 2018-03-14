@@ -112,6 +112,7 @@ struct ELet : public Exp {
 struct EFun : public Exp {
   shared_ptr<Exp> e1; //should be EVar
   shared_ptr<Exp> e2;
+  shared_ptr<Exp> apply(LitData val, const char* var);
   EFun(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2);
   LitData eval();
   shared_ptr<string> display(void);

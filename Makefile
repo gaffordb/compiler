@@ -3,7 +3,7 @@ LEX_OUTPUT=$(SRCDIR)scanner.yy.cpp
 BISON_OUTPUT=$(SRCDIR)parser.yy.cpp
 BISON_AUX=$(SRCDIR)location.hh $(SRCDIR)parser.yy.cpp $(SRCDIR)parser.yy.hpp $(SRCDIR)position.hh $(SRCDIR)stack.hh $(SRCDIR)parser.h
 CC=g++
-CC_FLAGS=-std=c++14 -O3 -Wall -Wno-deprecated-register
+CC_FLAGS=-std=c++14 -O3 -Wall -Wno-deprecated-register -Wno-duplicate-decl-specifier
 SRCDIR=src/lex-yacc-parser/
 ROOT=.
 .PHONY : compiler clean

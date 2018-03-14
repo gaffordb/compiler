@@ -10,7 +10,7 @@ shared_ptr<Exp> parser_driver::parse(int debug) {
     shared_ptr<Exp> ret = make_shared<EVar>("");
     yy::parser parser (*this, &ret);
 
-    parser.set_debug_level(0);
+    parser.set_debug_level(debug);
     result = parser.parse();
     scan_end();
     return ret;

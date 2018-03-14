@@ -296,6 +296,7 @@ namespace yy {
     /// An auxiliary type to compute the largest semantic type.
     union union_type
     {
+      // exp1
       // exp
       char dummy1[sizeof( shared_ptr<Exp> )];
 
@@ -303,7 +304,7 @@ namespace yy {
       char dummy2[sizeof(bool)];
 
       // "var"
-      char dummy3[sizeof(char*)];
+      char dummy3[sizeof(const char*)];
 
       // "int"
       char dummy4[sizeof(int)];
@@ -386,7 +387,7 @@ namespace yy {
 
   basic_symbol (typename Base::kind_type t, const bool v);
 
-  basic_symbol (typename Base::kind_type t, const char* v);
+  basic_symbol (typename Base::kind_type t, const const char* v);
 
   basic_symbol (typename Base::kind_type t, const int v);
 
@@ -527,7 +528,7 @@ namespace yy {
 
     static inline
     symbol_type
-    make_VAR (const char*& v);
+    make_VAR (const const char*& v);
 
 
     /// Build a parser object.
@@ -595,7 +596,7 @@ namespace yy {
     // Tables.
   // YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
   // STATE-NUM.
-  static const short int yypact_[];
+  static const signed char yypact_[];
 
   // YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
   // Performed when YYTABLE does not specify something else to do.  Zero
@@ -733,9 +734,9 @@ namespace yy {
     enum
     {
       yyeof_ = 0,
-      yylast_ = 151,     ///< Last index in yytable_.
-      yynnts_ = 3,  ///< Number of nonterminal symbols.
-      yyfinal_ = 15, ///< Termination state number.
+      yylast_ = 99,     ///< Last index in yytable_.
+      yynnts_ = 4,  ///< Number of nonterminal symbols.
+      yyfinal_ = 16, ///< Termination state number.
       yyterror_ = 1,
       yyerrcode_ = 256,
       yyntokens_ = 21  ///< Number of tokens.
@@ -816,7 +817,8 @@ namespace yy {
   {
       switch (other.type_get ())
     {
-      case 23: // exp
+      case 23: // exp1
+      case 24: // exp
         value.copy<  shared_ptr<Exp>  > (other.value);
         break;
 
@@ -825,7 +827,7 @@ namespace yy {
         break;
 
       case 20: // "var"
-        value.copy< char* > (other.value);
+        value.copy< const char* > (other.value);
         break;
 
       case 18: // "int"
@@ -848,7 +850,8 @@ namespace yy {
     (void) v;
       switch (this->type_get ())
     {
-      case 23: // exp
+      case 23: // exp1
+      case 24: // exp
         value.copy<  shared_ptr<Exp>  > (v);
         break;
 
@@ -857,7 +860,7 @@ namespace yy {
         break;
 
       case 20: // "var"
-        value.copy< char* > (v);
+        value.copy< const char* > (v);
         break;
 
       case 18: // "int"
@@ -891,7 +894,7 @@ namespace yy {
   {}
 
   template <typename Base>
-  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const char* v)
+  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const const char* v)
     : Base (t)
     , value (v)
   {}
@@ -928,7 +931,8 @@ namespace yy {
     // Type destructor.
     switch (yytype)
     {
-      case 23: // exp
+      case 23: // exp1
+      case 24: // exp
         value.template destroy<  shared_ptr<Exp>  > ();
         break;
 
@@ -937,7 +941,7 @@ namespace yy {
         break;
 
       case 20: // "var"
-        value.template destroy< char* > ();
+        value.template destroy< const char* > ();
         break;
 
       case 18: // "int"
@@ -967,7 +971,8 @@ namespace yy {
     super_type::move(s);
       switch (this->type_get ())
     {
-      case 23: // exp
+      case 23: // exp1
+      case 24: // exp
         value.move<  shared_ptr<Exp>  > (s.value);
         break;
 
@@ -976,7 +981,7 @@ namespace yy {
         break;
 
       case 20: // "var"
-        value.move< char* > (s.value);
+        value.move< const char* > (s.value);
         break;
 
       case 18: // "int"
@@ -1153,7 +1158,7 @@ namespace yy {
   }
 
   parser::symbol_type
-  parser::make_VAR (const char*& v)
+  parser::make_VAR (const const char*& v)
   {
     return symbol_type (token::TOK_VAR, v);
   }
@@ -1161,7 +1166,7 @@ namespace yy {
 
 
 } // yy
-#line 1165 "src/lex-yacc-parser/parser.yy.hpp" // lalr1.cc:392
+#line 1170 "src/lex-yacc-parser/parser.yy.hpp" // lalr1.cc:392
 
 
 
