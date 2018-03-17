@@ -80,6 +80,15 @@ struct ELeq : public Exp {
   void subst(LitData val, const char* var);
 };
 
+struct EBigger : public Exp {
+  shared_ptr<Exp> e1;
+  shared_ptr<Exp> e2;
+  EBigger(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+};
+
 struct EIf : public Exp {
   shared_ptr<Exp> e1;
   shared_ptr<Exp> e2;
@@ -127,8 +136,17 @@ struct EApp : public Exp {
   shared_ptr<string> display(void);
   void subst(LitData val, const char* var);
 };
-
-
+/*
+struct EFix : public Exp {
+  shared_ptr<Exp> e1; //should be EVar
+  shared_ptr<Exp> e2; //should be EVar
+  shared_ptr<Exp> e3;
+  EFix(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2, shared_ptr<Exp> _e3);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+};
+*/
 //tostring junk
 std::ostream& operator<<(std::ostream& strm, LitData const& ld);
 std::ostream& operator<<(std::ostream& strm, shared_ptr<Exp> exp);

@@ -132,6 +132,11 @@ shared_ptr<string> ELeq::display(void) {
   *ret = "(<= " + *this->e1->display() + " " + *this->e2->display() + ")";
   return ret;
 }
+shared_ptr<string> EBigger::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(> " + *this->e1->display() + " " + *this->e2->display() + ")";
+  return ret;
+}
 shared_ptr<string> EIf::display(void) {
   shared_ptr<string> ret = make_shared<string>();
   *ret = "(if " + *this->e1->display() + " then ";
@@ -282,6 +287,29 @@ void ELeq::subst(LitData val, const char* var) {
   this->e2->subst(val, var);
 }
 
+/***** EBigger ******************************************************************/
+
+EBigger::EBigger(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
+
+LitData EBigger::eval() {
+  LitData e1d = e1->eval();
+  LitData e2d = e2->eval();
+  if(e1d.type == ival && e2d.type == ival) {
+    LitData ret;
+    ret.type = bval;
+    ret.data.b = e1d.data.i > e2d.data.i;
+    return ret;
+  } else {
+    fprintf(stderr, "Cannot compare expressions of these types.\n");
+    cout << "Given: " << *e1->display() << ", and " << *e2->display() << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+void EBigger::subst(LitData val, const char* var) {
+  this->e1->subst(val, var);
+  this->e2->subst(val, var);
+}
 /***** EIf ******************************************************************/
 
 EIf::EIf(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2, shared_ptr<Exp> _e3)

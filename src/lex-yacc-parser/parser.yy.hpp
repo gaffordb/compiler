@@ -338,14 +338,16 @@ namespace yy {
         TOK_LEQUAL = 265,
         TOK_LET = 266,
         TOK_FUN = 267,
-        TOK_EQUALS = 268,
-        TOK_IN = 269,
-        TOK_RARROW = 270,
-        TOK_LPAREN = 271,
-        TOK_RPAREN = 272,
-        TOK_INT = 273,
-        TOK_BOOL = 274,
-        TOK_VAR = 275
+        TOK_FIX = 268,
+        TOK_EQUALS = 269,
+        TOK_IN = 270,
+        TOK_RARROW = 271,
+        TOK_LPAREN = 272,
+        TOK_RPAREN = 273,
+        TOK_BIGGER = 274,
+        TOK_INT = 275,
+        TOK_BOOL = 276,
+        TOK_VAR = 277
       };
     };
 
@@ -500,6 +502,10 @@ namespace yy {
 
     static inline
     symbol_type
+    make_FIX ();
+
+    static inline
+    symbol_type
     make_EQUALS ();
 
     static inline
@@ -517,6 +523,10 @@ namespace yy {
     static inline
     symbol_type
     make_RPAREN ();
+
+    static inline
+    symbol_type
+    make_BIGGER ();
 
     static inline
     symbol_type
@@ -596,7 +606,7 @@ namespace yy {
     // Tables.
   // YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
   // STATE-NUM.
-  static const signed char yypact_[];
+  static const short int yypact_[];
 
   // YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
   // Performed when YYTABLE does not specify something else to do.  Zero
@@ -612,7 +622,7 @@ namespace yy {
   // YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
   // positive, shift that token.  If negative, reduce the rule whose
   // number is the opposite.  If YYTABLE_NINF, syntax error.
-  static const unsigned char yytable_[];
+  static const signed char yytable_[];
 
   static const signed char yycheck_[];
 
@@ -734,12 +744,12 @@ namespace yy {
     enum
     {
       yyeof_ = 0,
-      yylast_ = 99,     ///< Last index in yytable_.
+      yylast_ = 200,     ///< Last index in yytable_.
       yynnts_ = 4,  ///< Number of nonterminal symbols.
-      yyfinal_ = 16, ///< Termination state number.
+      yyfinal_ = 18, ///< Termination state number.
       yyterror_ = 1,
       yyerrcode_ = 256,
-      yyntokens_ = 21  ///< Number of tokens.
+      yyntokens_ = 23  ///< Number of tokens.
     };
 
 
@@ -784,9 +794,9 @@ namespace yy {
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
-      15,    16,    17,    18,    19,    20
+      15,    16,    17,    18,    19,    20,    21,    22
     };
-    const unsigned int user_token_number_max_ = 275;
+    const unsigned int user_token_number_max_ = 277;
     const token_number_type undef_token_ = 2;
 
     if (static_cast<int>(t) <= yyeof_)
@@ -817,20 +827,20 @@ namespace yy {
   {
       switch (other.type_get ())
     {
-      case 23: // exp1
-      case 24: // exp
+      case 25: // exp1
+      case 26: // exp
         value.copy<  shared_ptr<Exp>  > (other.value);
         break;
 
-      case 19: // "bool"
+      case 21: // "bool"
         value.copy< bool > (other.value);
         break;
 
-      case 20: // "var"
+      case 22: // "var"
         value.copy< const char* > (other.value);
         break;
 
-      case 18: // "int"
+      case 20: // "int"
         value.copy< int > (other.value);
         break;
 
@@ -850,20 +860,20 @@ namespace yy {
     (void) v;
       switch (this->type_get ())
     {
-      case 23: // exp1
-      case 24: // exp
+      case 25: // exp1
+      case 26: // exp
         value.copy<  shared_ptr<Exp>  > (v);
         break;
 
-      case 19: // "bool"
+      case 21: // "bool"
         value.copy< bool > (v);
         break;
 
-      case 20: // "var"
+      case 22: // "var"
         value.copy< const char* > (v);
         break;
 
-      case 18: // "int"
+      case 20: // "int"
         value.copy< int > (v);
         break;
 
@@ -931,20 +941,20 @@ namespace yy {
     // Type destructor.
     switch (yytype)
     {
-      case 23: // exp1
-      case 24: // exp
+      case 25: // exp1
+      case 26: // exp
         value.template destroy<  shared_ptr<Exp>  > ();
         break;
 
-      case 19: // "bool"
+      case 21: // "bool"
         value.template destroy< bool > ();
         break;
 
-      case 20: // "var"
+      case 22: // "var"
         value.template destroy< const char* > ();
         break;
 
-      case 18: // "int"
+      case 20: // "int"
         value.template destroy< int > ();
         break;
 
@@ -971,20 +981,20 @@ namespace yy {
     super_type::move(s);
       switch (this->type_get ())
     {
-      case 23: // exp1
-      case 24: // exp
+      case 25: // exp1
+      case 26: // exp
         value.move<  shared_ptr<Exp>  > (s.value);
         break;
 
-      case 19: // "bool"
+      case 21: // "bool"
         value.move< bool > (s.value);
         break;
 
-      case 20: // "var"
+      case 22: // "var"
         value.move< const char* > (s.value);
         break;
 
-      case 18: // "int"
+      case 20: // "int"
         value.move< int > (s.value);
         break;
 
@@ -1044,7 +1054,7 @@ namespace yy {
     {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275
+     275,   276,   277
     };
     return static_cast<token_type> (yytoken_number_[type]);
   }
@@ -1116,6 +1126,12 @@ namespace yy {
   }
 
   parser::symbol_type
+  parser::make_FIX ()
+  {
+    return symbol_type (token::TOK_FIX);
+  }
+
+  parser::symbol_type
   parser::make_EQUALS ()
   {
     return symbol_type (token::TOK_EQUALS);
@@ -1146,6 +1162,12 @@ namespace yy {
   }
 
   parser::symbol_type
+  parser::make_BIGGER ()
+  {
+    return symbol_type (token::TOK_BIGGER);
+  }
+
+  parser::symbol_type
   parser::make_INT (const int& v)
   {
     return symbol_type (token::TOK_INT, v);
@@ -1166,7 +1188,7 @@ namespace yy {
 
 
 } // yy
-#line 1170 "src/lex-yacc-parser/parser.yy.hpp" // lalr1.cc:392
+#line 1192 "src/lex-yacc-parser/parser.yy.hpp" // lalr1.cc:392
 
 
 

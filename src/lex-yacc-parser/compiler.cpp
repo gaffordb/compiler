@@ -65,6 +65,8 @@ int main(int argc, char **argv) {
     parser_driver driver (argv[optind]);
     shared_ptr<Exp> prog = driver.parse(blex);
     if(bparse){
+      printf("So, we got here at least...");
+      exit(1);
       std::cout << prog << std::endl;
       return 0;
     }
