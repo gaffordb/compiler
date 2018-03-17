@@ -17,7 +17,8 @@ int main(int argc, char **argv) {
   bool bparse = false;
   bool step = false;
   if(argc < 2) {
-    printf("usage: compiler <filename>");
+    printf("usage: compiler <filename>\n");
+    exit(1);
   }
   while(1) {
     static struct option long_options[] =
@@ -63,14 +64,17 @@ int main(int argc, char **argv) {
       }
     }
     parser_driver driver (argv[optind]);
-    shared_ptr<Exp> prog = driver.parse(blex);
+    shared_ptr<Exp> expr = driver.parse(blex);
+    //sleep(1);
+    //printf("whatisgoinon");
+    //std::cout << expr << std::endl;m
+    //exit(1);
+    //auto prog = driver.parse(0);
     if(bparse){
-      printf("So, we got here at least...");
-      exit(1);
-      std::cout << prog << std::endl;
+      std::cout << expr << std::endl;
       return 0;
     }
-    std::cout << prog->eval() << std::endl;
+    std::cout << expr->eval() << std::endl;
     return 0;
   }
 }

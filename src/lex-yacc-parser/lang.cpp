@@ -35,6 +35,9 @@ ELit::ELit(LitData& ld) {
     case funval: {
       this->value.data.fun = ld.data.fun;
     }
+    case fixval: {
+      this->value.data.fix = ld.data.fix;
+    }
   }
 }
 
@@ -57,6 +60,10 @@ std::ostream& operator <<(std::ostream &strm, LitData const& ld) {
     }
     case funval: {
       strm << *(ld.data.fun->display());
+      break;
+    }
+    case fixval: {
+      strm << *(ld.data.fix->display());
       break;
     }
     default:
@@ -96,6 +103,9 @@ shared_ptr<string> ELit::display(void) {
     case funval: {
       *ret = *ld.data.fun->display();
       break;
+    }
+    case fixval: {
+      *ret = *ld.data.fix->display();
     }
     default:
     fprintf(stderr, "Invalid LitData type\n");
@@ -163,7 +173,11 @@ shared_ptr<string> EFun::display(void) {
   *ret = "(fun " + *this->e1->display() + " -> " + *this->e2->display() + ")";
   return ret;
 }
-
+shared_ptr<string> EFix::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(fix " + to_string(*this->fun_name) + " " + *this->fun->display() + " -> e)";// + /**this->e2->display()*/ *this->e3->display() + ")";
+  return ret;
+}
 shared_ptr<string> EApp::display(void) {
   shared_ptr<string> ret = make_shared<string>();
   *ret = "(" + *this->e1->display() + " " + *this->e2->display() + ")";
@@ -400,29 +414,11 @@ void ELet::subst(LitData val, const char* var) {
 EFun::EFun(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
 
 LitData EFun::eval() {
-  //if(this->e1->eval().type == strval) {
   LitData ret;
   ret.type = funval;
   ret.data.fun = this;
   return ret;
-  //}
 }
-
-
-/*
-LitData e1d = e1->eval();
-LitData e2d = e2->eval();
-if(e1d.type == ival && e2d.type == ival) {
-LitData ret;
-ret.type = bval;
-ret.data.b = e1d.data.i <= e2d.data.i;
-return ret;
-} else {
-fprintf(stderr, "Shouldn't eval function.\n");
-exit(EXIT_FAILURE);
-}
-*///DO NOTHING?
-
 
 void EFun::subst(LitData val, const char* var) {
   LitData ld = this->e1->eval();
@@ -434,27 +430,120 @@ void EFun::subst(LitData val, const char* var) {
 }
 
 shared_ptr<Exp> EFun::apply(LitData val, const char* var) {
-  this->e2->subst(val, var);
+  this->e2->subst(val, var); //fill in body with arg
   return this->e2;
 }
+
+/***** EFix ******************************************************************/
+
+EFix::EFix(const char* _e1, shared_ptr<Exp> _e2) : fun_name(_e1), fun(_e2) { }
+
+LitData EFix::eval() {
+  LitData ret;
+  ret.type = fixval;
+  ret.data.fix = this;
+  return ret;
+}
+
+void EFix::subst(LitData val, const char* var) {
+  //maybe add a check for shadowing -- don't worry about it rn though
+  this->fun->subst(val, var);
+}
+/*
+shared_ptr<Exp> EFix::apply(LitData val, const char* var) {
+  return this->fun->eval().data.fun->apply(val, var);
+}
+*/
+
+
+  /*
+  this->e3->subst(val, var);
+  return this->e3;
+  */
+/*
+  this->e1->subst();
+  this->e2->subst(val, var); //subst val for variable n
+  this->e1->subst(this->e3->eval(), this->e1->eval().data.str); //subst f for evaluated this
+  //this->e3->subst()
+  shared_ptr<Exp> replace = make_shared<EVar>(var);
+  this->e1
+  ((shared_ptr<EVar>)this->e2)->e2 = nullptr;
+  return (shared_ptr<Exp>)this;
+
+
+EFix::EFix(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2, shared_ptr<Exp> _e3)
+: EFun(_e2, _e3) {
+  this->e1 = _e1;
+}
+
+LitData EFix::eval() {
+  LitData ret;
+  ret.type = funval;
+  ret.data.fun = this;
+  return ret;
+}
+
+void EFix::subst(LitData val, const char* var) {
+  LitData ld1 = this->e1->eval();
+  LitData ld2 = this->e2->eval();
+  if((ld1.type == strval && strcmp(ld1.data.str, var) == 0)
+  || (ld2.type == strval && strcmp(ld2.data.str, var) == 0)) {
+    //prevent shadowing
+    return;
+  }
+  this->e3->subst(val, var);
+}
+
+shared_ptr<Exp> EFix::apply(LitData val, const char* var) {
+  this->e3->subst(val, var);
+  return this->e3;
+  
+  this->e1->subst();
+  this->e2->subst(val, var); //subst val for variable n
+  this->e1->subst(this->e3->eval(), this->e1->eval().data.str); //subst f for evaluated this
+  //this->e3->subst()
+  shared_ptr<Exp> replace = make_shared<EVar>(var);
+  this->e1
+  ((shared_ptr<EVar>)this->e2)->e2 = nullptr;
+  return (shared_ptr<Exp>)this;
+  */
+
 
 /***** EApp ******************************************************************/
 
 EApp::EApp(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
 
-LitData EApp::eval() {//TODO TYPECHECK!! maybe
+LitData EApp::eval() {
   LitData e1d = e1->eval();
   LitData e2d = e2->eval();
-  //cout << *e1->display() << endl; debuggin'
+  //char* sf = nullptr;
+  //*sf = 1;
+  cout << "Application: " << *this->display() << endl;
+  printf("Type: %d\n", e1d.type);
   if(e1d.type == funval) {
     LitData vardata = e1d.data.fun->e1->eval();
     if(vardata.type == strval) {
       const char* var = vardata.data.str;
       return e1d.data.fun->apply(e2d, var)->eval();
-      /*
-      e1->subst(e2d, var);
-      return e1->eval();
-      */
+    } else {
+      fprintf(stderr, "Invalid function application. Expected valid variable in fun\n");
+      exit(EXIT_FAILURE);
+    }
+  } else if (e1d.type == fixval) {
+    auto fixexp = e1d.data.fix;
+    LitData vardata = fixexp->e2->eval();
+    if(vardata.type == strval) {
+      const char* var = vardata.data.str;
+      if(fixexp->e1->eval().type == strval) {
+        const char* fun_name = fixexp->e1->eval().data.str;
+        fixexp->apply(e2d, var);
+        cout << "After subst var: " << *this->display() << endl;
+        fixexp->apply(this->eval(), fun_name);
+        return fixexp->eval();
+      } else {
+        fprintf(stderr, "Function name destroyed! That's not good.\n");
+        exit(EXIT_FAILURE);
+      }
     } else {
       fprintf(stderr, "Invalid function application. Expected valid variable in fun\n");
       exit(EXIT_FAILURE);

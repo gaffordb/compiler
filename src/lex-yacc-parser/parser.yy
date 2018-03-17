@@ -66,7 +66,7 @@ using namespace std;
 
 prog:
   exp1 "eof"                  { *ret = $1; }
-| "eof"                       { printf("Poppin!\n"); exit(1);}
+| "eof"                       { }
 
 
 exp1:
@@ -79,19 +79,18 @@ exp:
 | "bool"                           { $$ = make_shared<ELit>($1);        }
 | "let" "var" "=" exp1 "in" exp1   { $$ = make_shared<ELet>(make_shared<EVar>($2), $4, $6); }
 | "fun" "var" "->" exp1            { $$ = make_shared<EFun>(make_shared<EVar>($2), $4); }
-| "fix" "var" "var" "->" exp       {
-  shared_ptr<Exp> fexp = make_shared<EFun>(make_shared<EVar>($3), $5);
-  fexp->subst(fexp->eval(), $2);
-  $$ = fexp;
-}
-| "(" exp1 ")"                     { std::swap ($$, $2);                }
-|  exp1 "+" exp1                   { $$ = make_shared<EPlus>($1, $3);   }
-|  exp1 "*" exp1                   { $$ = make_shared<EMult>($1, $3);   }
-|  "if" exp1 "then" exp1 "else" exp1  { $$ = make_shared<EIf>($2, $4, $6); }
-|  exp1 "<=" exp1                  { $$ = make_shared<ELeq>($1, $3);    }
-|  exp1 ">" exp1                   { $$ = make_shared<EBigger>($1, $3); }
-|  exp1 "-" exp1                   { $$ = make_shared<EMinus>($1, $3);  }
-|  exp1 "/" exp1                   { $$ = make_shared<EDiv>($1, $3);    }
+| "fix" "var" "var" "->" exp1      {
+  $$ = make_shared<EFix>(make_shared<EVar>($2),
+                         make_shared<EVar>($3),
+                         ($5));}
+| "(" exp1 ")"                   { std::swap ($$, $2);                }
+|  exp "+" exp                   { $$ = make_shared<EPlus>($1, $3);   }
+|  exp "*" exp                   { $$ = make_shared<EMult>($1, $3);   }
+|  "if" exp "then" exp "else" exp  { $$ = make_shared<EIf>($2, $4, $6); }
+|  exp "<=" exp                  { $$ = make_shared<ELeq>($1, $3);    }
+|  exp ">" exp                   { $$ = make_shared<EBigger>($1, $3); }
+|  exp "-" exp                   { $$ = make_shared<EMinus>($1, $3);  }
+|  exp "/" exp                   { $$ = make_shared<EDiv>($1, $3);    }
 
 
 %%

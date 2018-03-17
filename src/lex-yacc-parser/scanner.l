@@ -7,7 +7,7 @@
 # include "parser.yy.hpp"
 #include <stdbool.h>
 #include <string.h>
-#define DEBUG_MODE true
+#define DEBUG_MODE false
 // Work around an incompatibility in flex (at least versions
 // 2.5.31 through 2.5.33): it generates code that does
 // not conform to C89.  See Debian bug 333231
