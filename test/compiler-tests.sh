@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NUM_TESTS=6
+NUM_TESTS=18
 #sed "${NUM}q;d" file -- to get a specific line from a file
 for ((i=0; i<NUM_TESTS; i++)); do
     echo Running test $i... 

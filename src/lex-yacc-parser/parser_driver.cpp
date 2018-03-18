@@ -6,8 +6,11 @@ parser_driver::~parser_driver() { }
 
 shared_ptr<Exp> parser_driver::parse(int debug) {
     scan_begin();
-    shared_ptr<Exp> ret;
+    //instantiate to deal with no expression case
+    //not really sure why this works
+    shared_ptr<Exp> ret = make_shared<EVar>("");
     yy::parser parser (*this, &ret);
+
     parser.set_debug_level(debug);
     result = parser.parse();
     scan_end();

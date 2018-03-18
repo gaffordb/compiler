@@ -1,0 +1,1 @@
+(let min2 = (fun x -> (fun y -> (if (<= x y) then x else y))) in (let a = 5 in (let b = 2 in ((min2 a) b))))

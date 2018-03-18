@@ -1,0 +1,3 @@
+let min2 =
+  fun x -> fun y -> y in 
+(min2 1) 2
