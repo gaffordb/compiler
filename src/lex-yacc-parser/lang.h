@@ -139,10 +139,11 @@ struct EFix2 : public EFun {
 };
 */
 struct EFix : public Exp {
-  //shared_ptr<Exp> e1; //var name for func
   const char* fun_name;
-  shared_ptr<Exp> fun; //actual func
-  EFix(const char* _e1, shared_ptr<Exp> _e2);
+  shared_ptr<Exp> e1; //should be EVar
+  shared_ptr<Exp> e2; //body
+  shared_ptr<Exp> apply(LitData val, const char* var);
+  EFix(const char* _fun_name, shared_ptr<Exp> _e1, shared_ptr<Exp> _e2);
   LitData eval();
   shared_ptr<string> display(void);
   void subst(LitData val, const char* var);

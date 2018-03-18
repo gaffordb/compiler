@@ -18,7 +18,7 @@
 
 %option noyywrap nounput batch debug noinput nodefault
 
-int   [0-9]+
+int   [-]*[0-9]+
 bool  (#)(t|f)
 blank [ \t]
 %%
