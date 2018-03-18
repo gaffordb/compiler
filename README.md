@@ -7,8 +7,8 @@ More details to come in the future.
 ## Language Syntax
 Language is defined as the following:   
 ```
-e ::= n | (e) | e1 + e1 | e1 - e2 | e1 * e2 | e1 / e2
-    | true | false | e1 <= e2 | if e1 then e2 else e3
+e ::= n | b | e1 (+) e2 | if e1 then e2 else e3
+    | x | let x = e1 in e2 | fun x -> e | fix f x -> e | e1 e2
 ```
 
 ## Dependencies
@@ -55,3 +55,8 @@ Available flags:
 * Language syntax changed from S-expressions to infix syntax. 
 * New test suite.
 * Added testing through the parsing stage of compilation. 
+
+### v0.0.4 (3/18/2018)
+* Added let bindings, functions, fix expressions, and function application.
+* Added relevant testing.
+* Added macro that allows for catching bugs in the lexing phase.
