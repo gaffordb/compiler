@@ -1,0 +1,3 @@
+let useless : int->unit = fun (x:int) : unit |-> ()
+in
+useless 1

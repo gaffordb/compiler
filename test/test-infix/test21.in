@@ -1,1 +1,1 @@
-let n = -7 in if n > 0 then -7 else -5
+let n : int = -7 in if n > 0 then -7 else -5

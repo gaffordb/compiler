@@ -8,7 +8,14 @@ More details to come in the future.
 Language is defined as the following:   
 ```
 e ::= n | b | e1 (+) e2 | if e1 then e2 else e3
-    | x | let x = e1 in e2 | fun x -> e | fix f x -> e | e1 e2
+    | x | let x : t = e1 in e2 | fun (x:t1) : t2 |-> e | fix f (x:t1) : t2 |-> e | e1 e2
+    | (e1 . e2) | fst e | snd e
+```
+
+## Types
+Types defined as the following:
+```
+t ::= int | bool | unit | t1 -> t2 | t1 * t2
 ```
 
 ## Dependencies
@@ -49,7 +56,6 @@ Available flags:
 * Included driver.cpp, parse.cpp, lex.cpp, parse.h, lex.h.
 * Added testing for driver
 
-
 ### v0.0.3 (3/08/2018)
 * Integrated lexer and parser generator
 * Language syntax changed from S-expressions to infix syntax. 
@@ -60,3 +66,8 @@ Available flags:
 * Added let bindings, functions, fix expressions, and function application.
 * Added relevant testing.
 * Added macro that allows for catching bugs in the lexing phase.
+
+### v0.0.5 (3/19/2018)
+* Added static typing system.
+* Added unit and pair type.
+* Added fst and snd function.
