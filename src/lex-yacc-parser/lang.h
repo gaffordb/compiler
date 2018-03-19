@@ -20,10 +20,9 @@ union LData {
 struct LitData {
   TData type;
   LData data;
-  //LitData(shared_ptr<Typ> typ, LitData ld);
 };
 
-
+/*************************TYPES**************************************/
 struct Typ {
   //~Typ() = default;
   virtual string display() = 0;
@@ -50,6 +49,7 @@ struct TPair : public Typ {
   TPair(shared_ptr<Typ> _t1, shared_ptr<Typ> _t2);
   string display();
 };
+
 struct TFun : public Typ {
   shared_ptr<Typ> tin;
   shared_ptr<Typ> tout;
@@ -57,6 +57,14 @@ struct TFun : public Typ {
   TFun(shared_ptr<Typ> _tin, shared_ptr<Typ> _tout);
   string display();
 };
+
+struct TRef : public Typ {
+  shared_ptr<Typ> t;
+  TRef(shared_ptr<Typ> _t);
+  string display();
+};
+
+/*************************Expressions**************************************/
 
 struct Exp {
   virtual LitData eval() = 0;
@@ -243,6 +251,44 @@ struct EUnit : public Exp {
   void subst(LitData val, const char* var);
   shared_ptr<Typ> typecheck();
 };
+
+struct ERef : public Exp {
+  shared_ptr<Exp> e;
+  ERef(shared_ptr<Exp> _e);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct EDeref : public Exp {
+  shared_ptr<Exp> e;
+  EDeref(shared_ptr<Exp> _e);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct ESet : public Exp {
+  shared_ptr<Exp> e1, e2;
+  ESet(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct ESeq : public Exp {
+  shared_ptr<Exp> e1, e2;
+  ESeq(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+/*************************MISC**************************************/
 
 LitData make_data(shared_ptr<Exp> e);
 

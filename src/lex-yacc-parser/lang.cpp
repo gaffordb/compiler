@@ -4,17 +4,6 @@
 #include <string>
 #include <signal.h>
 
-void check(shared_ptr<Typ> actual, shared_ptr<Typ> expected) {
-  string t1 = expected->display(), t2 = actual->display();
-  if(t1 == t2) {
-    return;
-  } else {
-    cerr << "Typecheck error.\nGiven: " << t1;
-    cerr << "\nExpected: " << t2 << endl;
-    exit(EXIT_FAILURE);
-  }
-}
-
 TInt::TInt() { }
 string TInt::display() { return "int"; }
 
@@ -24,7 +13,9 @@ string TBool::display() {return "bool"; }
 TUnit::TUnit() { }
 string TUnit::display() {return "unit"; }
 
-//TFun::TFun(TData _tin, TData _tout) : tin(_tin), tout(_tout) { }
+TRef::TRef(shared_ptr<Typ> _t) : t(_t) { }
+string TUnit::display() {return "<" + this->t->display() + ">"; }
+
 TFun::TFun(shared_ptr<Typ> _tin, shared_ptr<Typ> _tout) : tin(_tin), tout(_tout) { }
 string TFun::display() {
   return this->tin->display() + "->" + this->tout->display();
@@ -34,35 +25,18 @@ string TPair::display() {
   return this->t1->display() + "*" + this->t2->display();
 }
 
-LitData make_data(shared_ptr<Exp> e) {
-  auto typ = e->typecheck();
-  string tbase = typ->display();
-  LitData ld = e->eval();
-  LitData ret;
-  if(tbase == "int") {
-    ret.type = ival;
-    ret.data.i = ld.data.i;
-  } else if(tbase == "bool") {
-    ret.type = bval;
-    ret.data.b = ld.data.b;
-  } else if(tbase == "unit") {
-    ret.type = unitval;
-    ret.data.pair = nullptr;
-  } else {
-    return e->eval(); //should be appropriate LitData
-  }
-  return ret;
-}
-
 /***** EUnit *******************************************************************/
 EUnit::EUnit() { }
+
 LitData EUnit::eval() {
   LitData ret;
   ret.type = unitval;
   return ret;
 }
-void EUnit::subst(LitData val, const char* var) {  /*do nothing*/ }
+
+void EUnit::subst(LitData val, const char* var) { }
 shared_ptr<Typ> EUnit::typecheck() { return make_shared<TUnit>(); }
+
 /***** ELit *******************************************************************/
 
 ELit::ELit(int _value) {
@@ -327,6 +301,26 @@ shared_ptr<string> ESnd::display(void) {
 shared_ptr<string> EUnit::display(void) {
   shared_ptr<string> ret = make_shared<string>();
   *ret = "()";
+  return ret;
+}
+shared_ptr<string> ERef::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(ref " + *this->e->display() + ")";
+  return ret;
+}
+shared_ptr<string> EDeref::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(#" + *this->e->display() + ")";
+  return ret;
+}
+shared_ptr<string> ESet::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(" + *this->e1->display() + " := " + *this->e2->display() + ")";
+  return ret;
+}
+shared_ptr<string> ESeq::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(" + *this->e1->display() + " ; " + *this->e2->display() + ")";
   return ret;
 }
 /***** ELit ******************************************************************/
@@ -889,4 +883,120 @@ void ESnd::subst(LitData val, const char* var) {
 shared_ptr<Typ> ESnd::typecheck() {
   this->e->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   return this->e->typecheck();
+}
+
+/***** ERef ******************************************************************/
+
+ERef::ERef(shared_ptr<Exp> _e) : e(_e) { }
+
+LitData ERef::eval() {
+  typecheck();
+  //TODO
+}
+
+void ERef::subst(LitData val, const char* var) {
+  this->e->subst(val, var);
+}
+
+shared_ptr<Typ> ERef::typecheck() {
+  this->e->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  return this->e->typecheck();
+}
+
+/***** EDeref ******************************************************************/
+
+EDeref::EDeref(shared_ptr<Exp> _e) : e(_e) { }
+
+LitData EDeref::eval() {
+  typecheck();
+  //TODO
+}
+
+void EDeref::subst(LitData val, const char* var) {
+  this->e->subst(val, var);
+}
+
+shared_ptr<Typ> EDeref::typecheck() {
+  this->e->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  return this->e->typecheck();
+}
+
+/***** ESet ******************************************************************/
+
+ESet::ESet(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
+
+LitData ESet::eval() {
+  typecheck();
+  //TODO
+}
+
+void ESet::subst(LitData val, const char* var) {
+  this->e1->subst(val, var);
+  this->e2->subst(val, var);
+}
+
+shared_ptr<Typ> ESet::typecheck() {
+  auto t1 = this->e1->typecheck();
+  this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  check(t1, this->e2->typecheck());
+  return t1;
+}
+
+/***** ESeq ******************************************************************/
+
+ESeq::ESeq(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
+
+LitData ESeq::eval() {
+  typecheck();
+  LitData e1d = e1->eval();
+  LitData e2d = e2->eval();
+
+  LitData ret;
+  ret.type = bval;
+  ret.data.b = e1d.data.i > e2d.data.i;
+  return ret;
+}
+
+void ESeq::subst(LitData val, const char* var) {
+  this->e1->subst(val, var);
+  this->e2->subst(val, var);
+}
+
+shared_ptr<Typ> ESeq::typecheck() {
+  this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  return this->e2->typecheck();
+}
+/***** MISC ******************************************************************/
+
+void check(shared_ptr<Typ> actual, shared_ptr<Typ> expected) {
+  string t1 = expected->display(), t2 = actual->display();
+  if(t1 == t2) {
+    return;
+  } else {
+    cerr << "Typecheck error.\nGiven: " << t1;
+    cerr << "\nExpected: " << t2 << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+LitData make_data(shared_ptr<Exp> e) {
+  auto typ = e->typecheck();
+  string tbase = typ->display();
+  LitData ld = e->eval();
+  LitData ret;
+  if(tbase == "int") {
+    ret.type = ival;
+    ret.data.i = ld.data.i;
+  } else if(tbase == "bool") {
+    ret.type = bval;
+    ret.data.b = ld.data.b;
+  } else if(tbase == "unit") {
+    ret.type = unitval;
+    ret.data.pair = nullptr;
+  } else {
+    return e->eval(); //should be appropriate LitData
+  }
+  return ret;
 }
