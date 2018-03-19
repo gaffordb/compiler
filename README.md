@@ -60,3 +60,8 @@ Available flags:
 * Added let bindings, functions, fix expressions, and function application.
 * Added relevant testing.
 * Added macro that allows for catching bugs in the lexing phase.
+
+### v0.0.5 (3/19/2018)
+* Added static typing system.
+* Added unit and pair type.
+* Added fst and snd function.
