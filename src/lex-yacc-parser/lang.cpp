@@ -4,6 +4,66 @@
 #include <string>
 #include <signal.h>
 
+/***** MISC ******************************************************************/
+
+void check(shared_ptr<Typ> actual, shared_ptr<Typ> expected) {
+  string t1 = expected->display(), t2 = actual->display();
+  if(t1 == t2) {
+    return;
+  } else {
+    cerr << "Typecheck error.\nGiven: " << t1;
+    cerr << "\nExpected: " << t2 << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+LitData make_data(shared_ptr<Exp> e) {
+  auto typ = e->typecheck();
+  string tbase = typ->display();
+  LitData ld = e->eval();
+  LitData ret;
+  if(tbase == "int") {
+    ret.type = ival;
+    ret.data.i = ld.data.i;
+  } else if(tbase == "bool") {
+    ret.type = bval;
+    ret.data.b = ld.data.b;
+  } else if(tbase == "unit") {
+    ret.type = unitval;
+    ret.data.pair = nullptr;
+  } else {
+    return e->eval(); //should be appropriate LitData
+  }
+  return ret;
+}
+
+/*************************STACK**************************************/
+void set_ptr(unsigned int addr, shared_ptr<Exp> val) {
+  //ensure ptr has been allocated
+  if(addr < g_stack_next_alloc) {
+    g_stack.insert({addr, val});
+  } else {
+    cerr << "Error: Cannot set unallocated pointer." << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+unsigned int ptr_alloc() {
+  return g_stack_next_alloc++;
+}
+
+shared_ptr<Exp> get_ptr(unsigned int addr) {
+  //ensure ptr has been allocated
+  if(addr < g_stack_next_alloc) {
+    return g_stack[addr];
+  } else {
+    cerr << "Error: Cannot set unallocated pointer." << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+/***** Types *****************************************************************/
+
 TInt::TInt() { }
 string TInt::display() { return "int"; }
 
@@ -14,7 +74,7 @@ TUnit::TUnit() { }
 string TUnit::display() {return "unit"; }
 
 TRef::TRef(shared_ptr<Typ> _t) : t(_t) { }
-string TUnit::display() {return "<" + this->t->display() + ">"; }
+string TRef::display() {return "<" + this->t->display() + ">"; }
 
 TFun::TFun(shared_ptr<Typ> _tin, shared_ptr<Typ> _tout) : tin(_tin), tout(_tout) { }
 string TFun::display() {
@@ -900,7 +960,7 @@ void ERef::subst(LitData val, const char* var) {
 
 shared_ptr<Typ> ERef::typecheck() {
   this->e->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
-  return this->e->typecheck();
+  return make_shared<TRef>(this->e->typecheck());
 }
 
 /***** EDeref ******************************************************************/
@@ -918,7 +978,14 @@ void EDeref::subst(LitData val, const char* var) {
 
 shared_ptr<Typ> EDeref::typecheck() {
   this->e->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
-  return this->e->typecheck();
+  TRef* tref = dynamic_cast<TRef*>(this->e->typecheck().get());
+  if(tref != nullptr) {
+    return tref->t;
+  } else {
+    cerr << "Typecheck error:\n";
+    cerr << "Expected <t>, given " << this->e->typecheck() << endl;
+    exit(EXIT_FAILURE);
+  }
 }
 
 /***** ESet ******************************************************************/
@@ -928,6 +995,7 @@ ESet::ESet(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
 LitData ESet::eval() {
   typecheck();
   //TODO
+
 }
 
 void ESet::subst(LitData val, const char* var) {
@@ -936,11 +1004,15 @@ void ESet::subst(LitData val, const char* var) {
 }
 
 shared_ptr<Typ> ESet::typecheck() {
-  auto t1 = this->e1->typecheck();
   this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
-  check(t1, this->e2->typecheck());
-  return t1;
+
+  auto t2 = this->e2->typecheck();
+  auto t1 = this->e1->typecheck();
+
+  auto expected = make_shared<TRef>(t2);
+  check(t1, expected);
+  return make_shared<TUnit>();
 }
 
 /***** ESeq ******************************************************************/
@@ -967,36 +1039,4 @@ shared_ptr<Typ> ESeq::typecheck() {
   this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   return this->e2->typecheck();
-}
-/***** MISC ******************************************************************/
-
-void check(shared_ptr<Typ> actual, shared_ptr<Typ> expected) {
-  string t1 = expected->display(), t2 = actual->display();
-  if(t1 == t2) {
-    return;
-  } else {
-    cerr << "Typecheck error.\nGiven: " << t1;
-    cerr << "\nExpected: " << t2 << endl;
-    exit(EXIT_FAILURE);
-  }
-}
-
-LitData make_data(shared_ptr<Exp> e) {
-  auto typ = e->typecheck();
-  string tbase = typ->display();
-  LitData ld = e->eval();
-  LitData ret;
-  if(tbase == "int") {
-    ret.type = ival;
-    ret.data.i = ld.data.i;
-  } else if(tbase == "bool") {
-    ret.type = bval;
-    ret.data.b = ld.data.b;
-  } else if(tbase == "unit") {
-    ret.type = unitval;
-    ret.data.pair = nullptr;
-  } else {
-    return e->eval(); //should be appropriate LitData
-  }
-  return ret;
 }

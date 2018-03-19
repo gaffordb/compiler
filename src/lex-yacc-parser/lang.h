@@ -6,6 +6,10 @@
 
 using namespace std;
 
+
+
+/*************************Data**************************************/
+
 enum TData { ival, bval, strval, funval, fixval, pairval, unitval };
 
 union LData {
@@ -287,6 +291,15 @@ struct ESeq : public Exp {
   void subst(LitData val, const char* var);
   shared_ptr<Typ> typecheck();
 };
+
+/*************************STACK**************************************/
+
+extern unordered_map<unsigned int, shared_ptr<Exp> > g_stack;
+extern unsigned int g_stack_next_alloc;
+
+void set_ptr(unsigned int addr, shared_ptr<Exp> val);
+unsigned int ptr_alloc();
+shared_ptr<Exp> get_ptr(unsigned int addr);
 
 /*************************MISC**************************************/
 
