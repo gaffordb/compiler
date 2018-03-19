@@ -8,7 +8,14 @@ More details to come in the future.
 Language is defined as the following:   
 ```
 e ::= n | b | e1 (+) e2 | if e1 then e2 else e3
-    | x | let x = e1 in e2 | fun x -> e | fix f x -> e | e1 e2
+    | x | let x : t = e1 in e2 | fun (x:t1) : t2 |-> e | fix f (x:t1) : t2 |-> e | e1 e2
+    | (e1 . e2) | fst e | snd e
+```
+
+## Types
+Types defined as the following:
+```
+t ::= int | bool | unit | t1 -> t2 | t1 * t2
 ```
 
 ## Dependencies
@@ -48,7 +55,6 @@ Available flags:
 * Added tocheck.txt to include all of the files to be run through linter
 * Included driver.cpp, parse.cpp, lex.cpp, parse.h, lex.h.
 * Added testing for driver
-
 
 ### v0.0.3 (3/08/2018)
 * Integrated lexer and parser generator
