@@ -1,4 +1,4 @@
-let min2 : int->int =
+let min2 : int->int->int =
   fun (x:int) : int->int |-> fun (y:int) : int |-> if x <= y then x else y
 in
 let a : int = 5 in

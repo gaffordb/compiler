@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <iostream>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 using namespace std;
@@ -48,7 +48,7 @@ struct Exp {
   virtual LitData eval() = 0;
   virtual shared_ptr<string> display(void) = 0;
   virtual void subst(LitData val, const char* var) = 0;
-  map<string, shared_ptr<Typ> > ctx; //mapping of vars to type
+  unordered_map<string, shared_ptr<Typ> > ctx; //mapping of vars to type
   virtual shared_ptr<Typ> typecheck() = 0;
   //~Exp() = default;
 };

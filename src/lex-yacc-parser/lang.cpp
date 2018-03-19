@@ -504,7 +504,7 @@ void EIf::subst(LitData val, const char* var) {
 }
 
 shared_ptr<Typ> EIf::typecheck() {
-  printf("TC-IF\n");
+  //printf("TC-IF\n");
   this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   this->e3->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
@@ -545,13 +545,15 @@ void EVar::subst(LitData val, const char* var) {
 
 shared_ptr<Typ> EVar::typecheck() {
   const string var(this->var);
-  cout << this->ctx.count(var) << endl;
+  //cout << "\n\n\n";
+  //cout << this->ctx.count(var) << endl;m
   auto ret = this->ctx[var];
 
   // For potential future debugging
+  /*
   for(auto const &kv : this->ctx)
     cout << kv.first << " == " << var <<  " " << (kv.first == var) << endl;
-
+*/
   if(ret == nullptr) {
     fprintf(stderr, "Error: Unmapped variable: %s\n", this->var);
     exit(EXIT_FAILURE);
@@ -591,7 +593,7 @@ void ELet::subst(LitData val, const char* var) {
 }
 
 shared_ptr<Typ> ELet::typecheck() {
-  printf("TC-LET\n");
+  //printf("TC-LET\n");
   this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   check(this->tv, this->e2->typecheck());
@@ -639,17 +641,19 @@ shared_ptr<Exp> EFun::apply(LitData val, const char* var) {
 }
 
 shared_ptr<Typ> EFun::typecheck() {
-  printf("TC-FUN\n");
+  //printf("TC-FUN\n");
   auto tin = this->tin;
   auto tout = this->tout;
   //cout << "IN " << tin->display() << endl;
   //cout << "OUT " << tout->display() << endl;
+  this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+
   check(this->e2->typecheck(), tout);
   //cout << "RET " << make_shared<TFun>(tin, tout)->display() << endl;
   TFun* tfun;
-  if((tfun = dynamic_cast<TFun*>(this->e1->typecheck().get())) != nullptr) {
-    tout = tfun->tout;
+  if((tfun = dynamic_cast<TFun*>(this->e2->typecheck().get())) != nullptr) {
+    //tout = tfun->tout;
   }
   return make_shared<TFun>(tin, tout);
 }
@@ -684,6 +688,7 @@ void EFix::subst(LitData val, const char* var) {
 
     auto tin = this->tin;
     auto tout = this->tout;
+    this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
     this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
     check( this->e2->typecheck(), tin);
     return make_shared<TFun>(tin, tout);
@@ -730,18 +735,20 @@ void EFix::subst(LitData val, const char* var) {
     this->e2->subst(val, var);
   }
   shared_ptr<Typ> EApp::typecheck() {
-    printf("TC-APP\n");
+    //printf("TC-APP\n");
     TFun* tfun;
     shared_ptr<Typ> tin, tout;
     this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
-    if((tfun = dynamic_cast<TFun*>(this->e1->typecheck().get())) != nullptr) {
+    shared_ptr<Typ> t1 = this->e1->typecheck();
+    //cout << "This should be a function: " << t1->display() << endl;
+    if((tfun = dynamic_cast<TFun*>(t1.get())) != nullptr) {
       tin = tfun->tin;
       this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
       check(tin, this->e2->typecheck()); //exits if fails
       tout = tfun->tout;
       return tout;
     } else {
-      cerr << "Expected function as first argument, given " << this->e1->typecheck()->display();
+      cerr << "Expected function as first argument, given " << t1->display();
       exit(EXIT_FAILURE);
     }
   }
