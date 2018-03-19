@@ -53,12 +53,22 @@ blank [ \t]
               return yy::parser::make_IN();       }
 "->"        { if(DEBUG_MODE) {printf("token: |->|\n");}
               return yy::parser::make_RARROW();   }
+"|->"        { if(DEBUG_MODE) {printf("token: ||->|\n");}
+              return yy::parser::make_FARROW();   }
 "("         { if(DEBUG_MODE) {printf("token: |(|\n");}
               return yy::parser::make_LPAREN();   }
 ")"         { if(DEBUG_MODE) {printf("token: |)|\n");}
               return yy::parser::make_RPAREN();   }
 ">"         { if(DEBUG_MODE) {printf("token: |>|\n");}
               return yy::parser::make_BIGGER();   }
+":"         { if(DEBUG_MODE) {printf("token: |:|\n");}
+              return yy::parser::make_COLON();   }
+"()"        { if(DEBUG_MODE) {printf("token: |()|\n");}
+              return yy::parser::make_UNIT();   }
+"int"       { if(DEBUG_MODE) {printf("token: |int|\n");}
+              return yy::parser::make_INTTYPE();   }
+"bool"       { if(DEBUG_MODE) {printf("token: |bool|\n");}
+              return yy::parser::make_BOOLTYPE();   }
 
 [a-zA-Z][a-zA-Z0-9]* {
   const char *yycopy = strdup(yytext);

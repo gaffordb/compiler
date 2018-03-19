@@ -14,6 +14,7 @@ shared_ptr<Exp> parser_driver::parse(int debug) {
     parser.set_debug_level(debug);
     result = parser.parse();
     scan_end();
+
     return ret;
 }
 

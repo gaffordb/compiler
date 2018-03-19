@@ -14,6 +14,8 @@
 #include <memory>
 #include "lang.h"
 #include <stdbool.h>
+#include <vector>
+
 class parser_driver;
 using namespace std;
 }
@@ -48,16 +50,23 @@ using namespace std;
   EQUALS      "="
   IN          "in"
   RARROW      "->"
+  FARROW      "|->"
   LPAREN      "("
   RPAREN      ")"
   BIGGER      ">"
+  COLON       ":"
+  UNIT        "()"
+  INTTYPE     "int"
+  BOOLTYPE    "bool"
 ;
 
-%token <int> INT "int"
-%token <bool> BOOL "bool"
+%token <int> INT "vint"
+%token <bool> BOOL "vbool"
 %token <const char*> VAR "var"
+
 %type  < shared_ptr<Exp> > exp
 %type  < shared_ptr<Exp> > exp1
+%type  < shared_ptr<Typ> > typ
 %parse-param {shared_ptr<Exp> *ret}
 
 %%
@@ -65,8 +74,8 @@ using namespace std;
 %start prog;
 
 prog:
-  exp1 "eof"                  { *ret = $1; }
-| "eof"                       { }
+  exp1 "eof"                       { *ret = $1; }
+| "eof"                            { }
 
 
 exp1:
@@ -75,15 +84,20 @@ exp1:
 
 exp:
   "var"                            { $$ = make_shared<EVar>($1);        }
-| "int"                            { $$ = make_shared<ELit>($1);        }
-| "bool"                           { $$ = make_shared<ELit>($1);        }
-| "let" "var" "=" exp1 "in" exp1   { $$ = make_shared<ELet>(make_shared<EVar>($2), $4, $6); }
-| "fun" "var" "->" exp1            { $$ = make_shared<EFun>(make_shared<EVar>($2), $4); }
-| "fix" "var" "var" "->" exp1      {
-  $$ = make_shared<EFix>($2,
-                         make_shared<EVar>($3),
-                         ($5));}
-| "(" exp1 ")"                   { std::swap ($$, $2);                }
+| "vint"                           { $$ = make_shared<ELit>($1);        }
+| "vbool"                          { $$ = make_shared<ELit>($1);        }
+| "let" "var" ":" typ "=" exp1 "in" exp1
+                                   { $$ = make_shared<ELet>(make_shared<EVar>($2), $6, $8, $4);
+                                     $$->ctx.insert({$2, $4}); }
+| "fun" "(" "var" ":" typ ")" ":" typ "|->" exp1
+                                   { $$ = make_shared<EFun>(make_shared<EVar>($3), $10, $5, $8);
+                                     $$->ctx.insert({$3, $5});} //mapping for var
+| "fix" "var" "(" "var" ":" typ ")" ":" typ "|->" exp1
+                                   { $$ = make_shared<EFix>($2, make_shared<EVar>($4), $11, $6, $9);
+                                     $$->ctx.insert({$2, $9});
+                                     $$->ctx.insert({$4, $6});
+}
+| "(" exp1 ")"                     { std::swap ($$, $2);                }
 |  exp1 "+" exp1                   { $$ = make_shared<EPlus>($1, $3);   }
 |  exp1 "*" exp1                   { $$ = make_shared<EMult>($1, $3);   }
 |  "if" exp1 "then" exp1 "else" exp1  { $$ = make_shared<EIf>($2, $4, $6); }
@@ -91,7 +105,12 @@ exp:
 |  exp1 ">" exp1                   { $$ = make_shared<EBigger>($1, $3); }
 |  exp1 "-" exp1                   { $$ = make_shared<EMinus>($1, $3);  }
 |  exp1 "/" exp1                   { $$ = make_shared<EDiv>($1, $3);    }
+//|  "()"                            { $$ = make_shared<EUnit>()          }//TODO
 
+typ:
+  "int"                           { $$ = make_shared<TInt>();        }
+| "bool"                          { $$ = make_shared<TBool>();       }
+| typ "->" typ                    { $$ = make_shared<TFun>($1, $3);  }
 
 %%
 
