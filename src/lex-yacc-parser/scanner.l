@@ -69,6 +69,14 @@ blank [ \t]
               return yy::parser::make_INTTYPE();   }
 "bool"       { if(DEBUG_MODE) {printf("token: |bool|\n");}
               return yy::parser::make_BOOLTYPE();   }
+"unit"       { if(DEBUG_MODE) {printf("token: |unit|\n");}
+              return yy::parser::make_UNITTYPE();   }
+"fst"       { if(DEBUG_MODE) {printf("token: |fst|\n");}
+              return yy::parser::make_FIRST();   }
+"snd"       { if(DEBUG_MODE) {printf("token: |snd|\n");}
+              return yy::parser::make_SECOND();   }
+" . "       { if(DEBUG_MODE) {printf("token: | . |\n");}
+              return yy::parser::make_DOT();   }
 
 [a-zA-Z][a-zA-Z0-9]* {
   const char *yycopy = strdup(yytext);

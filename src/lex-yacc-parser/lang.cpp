@@ -3,28 +3,16 @@
 #include <iostream>
 #include <string>
 #include <signal.h>
-//NOTE to change with new types!
+
 void check(shared_ptr<Typ> actual, shared_ptr<Typ> expected) {
   string t1 = expected->display(), t2 = actual->display();
-  //bool valid = true;
-  /*
-  if(dynamic_cast<TInt*>(expected.get()) != nullptr) {
-  t1 =
-  valid = dynamic_cast<TInt*>(expected.get()) != nullptr;
-} else if(dynamic_cast<TBool*>(expected.get()) != nullptr) {
-valid = dynamic_cast<TBool*>(expected.get()) != nullptr;
-} else {
-
-}
-*/
-if(t1 == t2) {
-  return;
-} else {
-  cerr << "Typecheck error.\nGiven: " << t1;
-  cerr << "\nExpected: " << t2 << endl;
-  raise(SIGINT);
-  exit(EXIT_FAILURE);
-}
+  if(t1 == t2) {
+    return;
+  } else {
+    cerr << "Typecheck error.\nGiven: " << t1;
+    cerr << "\nExpected: " << t2 << endl;
+    exit(EXIT_FAILURE);
+  }
 }
 
 TInt::TInt() { }
@@ -33,12 +21,48 @@ string TInt::display() { return "int"; }
 TBool::TBool() { }
 string TBool::display() {return "bool"; }
 
+TUnit::TUnit() { }
+string TUnit::display() {return "unit"; }
+
 //TFun::TFun(TData _tin, TData _tout) : tin(_tin), tout(_tout) { }
 TFun::TFun(shared_ptr<Typ> _tin, shared_ptr<Typ> _tout) : tin(_tin), tout(_tout) { }
 string TFun::display() {
   return this->tin->display() + "->" + this->tout->display();
 }
+TPair::TPair(shared_ptr<Typ> _t1, shared_ptr<Typ> _t2) : t1(_t1), t2(_t2) { }
+string TPair::display() {
+  return this->t1->display() + "*" + this->t2->display();
+}
 
+LitData make_data(shared_ptr<Exp> e) {
+  auto typ = e->typecheck();
+  string tbase = typ->display();
+  LitData ld = e->eval();
+  LitData ret;
+  if(tbase == "int") {
+    ret.type = ival;
+    ret.data.i = ld.data.i;
+  } else if(tbase == "bool") {
+    ret.type = bval;
+    ret.data.b = ld.data.b;
+  } else if(tbase == "unit") {
+    ret.type = unitval;
+    ret.data.pair = nullptr;
+  } else {
+    return e->eval(); //should be appropriate LitData
+  }
+  return ret;
+}
+
+/***** EUnit *******************************************************************/
+EUnit::EUnit() { }
+LitData EUnit::eval() {
+  LitData ret;
+  ret.type = unitval;
+  return ret;
+}
+void EUnit::subst(LitData val, const char* var) {  /*do nothing*/ }
+shared_ptr<Typ> EUnit::typecheck() { return make_shared<TUnit>(); }
 /***** ELit *******************************************************************/
 
 ELit::ELit(int _value) {
@@ -70,9 +94,19 @@ ELit::ELit(LitData& ld) {
     }
     case funval: {
       this->value.data.fun = ld.data.fun;
+      break;
     }
     case fixval: {
       this->value.data.fix = ld.data.fix;
+      break;
+    }
+    case pairval: {
+      this->value.data.pair = ld.data.pair;
+      break;
+    }
+    case unitval: {
+      this->value.data.pair = nullptr;
+      break;
     }
   }
 }
@@ -99,9 +133,17 @@ std::ostream& operator <<(std::ostream &strm, LitData const& ld) {
       strm << *(ld.data.fix->display());
       break;
     }
+    case pairval: {
+      strm << *(ld.data.pair->display());
+      break;
+    }
+    case unitval: {
+      strm << "()";
+      break;
+    }
     default:
     printf("Given: %d", ld.type);
-    fprintf(stderr, "Invalid LitData type");
+    fprintf(stderr, "Invalid LitData type.\n");
     exit(EXIT_FAILURE);
   }
   return strm;
@@ -129,9 +171,17 @@ std::ostream& operator <<(std::ostream &strm, TData const& ld) {
       strm << "fix";
       break;
     }
+    case pairval: {
+      strm << "pair";
+      break;
+    }
+    case unitval: {
+      strm << "unit";
+      break;
+    }
     default:
     printf("Given: %d", ld);
-    fprintf(stderr, "Invalid LitData type");
+    fprintf(stderr, "Invalid LitData type!\n");
     exit(EXIT_FAILURE);
   }
   return strm;
@@ -171,6 +221,14 @@ shared_ptr<string> ELit::display(void) {
     }
     case fixval: {
       *ret = *ld.data.fix->display();
+      break;
+    }
+    case pairval: {
+      *ret =  *(ld.data.pair->display());
+      break;
+    }
+    case unitval: {
+      *ret = "()";
       break;
     }
     default:
@@ -251,7 +309,26 @@ shared_ptr<string> EApp::display(void) {
   *ret = "(" + *this->e1->display() + " " + *this->e2->display() + ")";
   return ret;
 }
-
+shared_ptr<string> EPair::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(" + *this->e1->display() + " . " + *this->e2->display() + ")";
+  return ret;
+}
+shared_ptr<string> EFst::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(fst " + *this->e->display() + ")";
+  return ret;
+}
+shared_ptr<string> ESnd::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(snd " + *this->e->display() + ")";
+  return ret;
+}
+shared_ptr<string> EUnit::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "()";
+  return ret;
+}
 /***** ELit ******************************************************************/
 
 LitData ELit::eval() { return value; }
@@ -278,15 +355,12 @@ EPlus::EPlus(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
 
 LitData EPlus::eval() {
   typecheck();
-  if(e1->eval().type == ival && e2->eval().type == ival) {
-    LitData ret;
-    ret.type = ival;
-    ret.data.i = e1->eval().data.i + e2->eval().data.i;
-    return ret;
-  } else {
-    fprintf(stderr, "Cannot add expressions of these types.\n");
-    exit(EXIT_FAILURE);
-  }
+
+  LitData ret;
+  ret.type = ival;
+  ret.data.i = e1->eval().data.i + e2->eval().data.i;
+  return ret;
+
 }
 
 void EPlus::subst(LitData val, const char* var) {
@@ -312,15 +386,11 @@ LitData EMinus::eval() {
   LitData e1d = e1->eval();
   LitData e2d = e2->eval();
 
-  if(e1d.type == ival && e2d.type == ival) {
-    LitData ret;
-    ret.type = ival;
-    ret.data.i = e1d.data.i - e2d.data.i;
-    return ret;
-  } else {
-    fprintf(stderr, "Cannot subtract expressions of these types.\n");
-    exit(EXIT_FAILURE);
-  }
+  LitData ret;
+  ret.type = ival;
+  ret.data.i = e1d.data.i - e2d.data.i;
+  return ret;
+
 }
 
 void EMinus::subst(LitData val, const char* var) {
@@ -345,15 +415,12 @@ LitData EMult::eval() {
   typecheck();
   LitData e1d = e1->eval();
   LitData e2d = e2->eval();
-  if(e1d.type == ival && e2d.type == ival) {
-    LitData ret;
-    ret.type = ival;
-    ret.data.i = e1d.data.i * e2d.data.i;
-    return ret;
-  } else {
-    fprintf(stderr, "Cannot multiply expressions of these types.\n");
-    exit(EXIT_FAILURE);
-  }
+
+  LitData ret;
+  ret.type = ival;
+  ret.data.i = e1d.data.i * e2d.data.i;
+  return ret;
+
 }
 
 void EMult::subst(LitData val, const char* var) {
@@ -378,20 +445,17 @@ LitData EDiv::eval() {
   typecheck();
   LitData e1d = e1->eval();
   LitData e2d = e2->eval();
-  if(e1d.type == ival && e2d.type == ival) {
-    if(e2d.data.i == 0) {
-      fprintf(stderr, "Cannot divide by zero.\n");
-      exit(EXIT_FAILURE);
-    }
-    LitData ret;
-    ret.type = ival;
-    ret.data.i = e1d.data.i * e2d.data.i;
-    return ret;
-  } else {
-    fprintf(stderr, "Cannot divide expressions of these types.\n");
+
+  if(e2d.data.i == 0) {
+    fprintf(stderr, "Cannot divide by zero.\n");
     exit(EXIT_FAILURE);
   }
+  LitData ret;
+  ret.type = ival;
+  ret.data.i = e1d.data.i * e2d.data.i;
+  return ret;
 }
+
 
 void EDiv::subst(LitData val, const char* var) {
   this->e1->subst(val, var);
@@ -415,16 +479,10 @@ LitData ELeq::eval() {
   typecheck();
   LitData e1d = e1->eval();
   LitData e2d = e2->eval();
-  if(e1d.type == ival && e2d.type == ival) {
-    LitData ret;
-    ret.type = bval;
-    ret.data.b = e1d.data.i <= e2d.data.i;
-    return ret;
-  } else {
-    fprintf(stderr, "Cannot compare expressions of these types.\n");
-    cout << "Given: " << *e1->display() << ", and " << *e2->display() << endl;
-    exit(EXIT_FAILURE);
-  }
+  LitData ret;
+  ret.type = bval;
+  ret.data.b = e1d.data.i <= e2d.data.i;
+  return ret;
 }
 
 void ELeq::subst(LitData val, const char* var) {
@@ -449,17 +507,11 @@ LitData EBigger::eval() {
   typecheck();
   LitData e1d = e1->eval();
   LitData e2d = e2->eval();
-  if(e1d.type == ival && e2d.type == ival) {
-    LitData ret;
-    ret.type = bval;
-    ret.data.b = e1d.data.i > e2d.data.i;
-    return ret;
-  } else {
-    fprintf(stderr, "Cannot compare expressions of these types.\n");
-    cout << "Given: " << *e1->display() << ", and " << *e2->display() << endl;
-    raise(SIGINT);
-    exit(EXIT_FAILURE);
-  }
+
+  LitData ret;
+  ret.type = bval;
+  ret.data.b = e1d.data.i > e2d.data.i;
+  return ret;
 }
 
 void EBigger::subst(LitData val, const char* var) {
@@ -484,16 +536,10 @@ EIf::EIf(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2, shared_ptr<Exp> _e3)
 LitData EIf::eval() {
   typecheck();
   LitData e1d = e1->eval();
-  if(e1d.type == bval) {
-
-    if(e1d.data.b) {
-      return e2->eval();
-    } else {
-      return e3->eval();
-    }
+  if(e1d.data.b) {
+    return e2->eval();
   } else {
-    fprintf(stderr,"Error. Expected boolean in the guard of the if statement.");
-    exit(EXIT_FAILURE);
+    return e3->eval();
   }
 }
 
@@ -513,7 +559,7 @@ shared_ptr<Typ> EIf::typecheck() {
   //printf("guard cleared\n");
   //cout << this->e2->typecheck()->display() << endl;
   //cout << this->e3->typecheck()->display() << endl;
-  //check(this->e2->typecheck(), this->e3->typecheck());
+  check(this->e2->typecheck(), this->e3->typecheck());
   //printf("if cleared\n");
   return this->e2->typecheck();
 }
@@ -552,8 +598,8 @@ shared_ptr<Typ> EVar::typecheck() {
   // For potential future debugging
   /*
   for(auto const &kv : this->ctx)
-    cout << kv.first << " == " << var <<  " " << (kv.first == var) << endl;
-*/
+  cout << kv.first << " == " << var <<  " " << (kv.first == var) << endl;
+  */
   if(ret == nullptr) {
     fprintf(stderr, "Error: Unmapped variable: %s\n", this->var);
     exit(EXIT_FAILURE);
@@ -577,7 +623,7 @@ LitData ELet::eval() {
     LitData e3d = e3->eval();
     return e3d;
   } else {
-    fprintf(stderr, "Invalid let expression!\n");
+    cerr << "Expected var name, given " << *e1->display() << endl;
     exit(EXIT_FAILURE);
   }
 }
@@ -672,83 +718,175 @@ LitData EFix::eval() {
 }
 
 void EFix::subst(LitData val, const char* var) {
-  if(var == fun_name ||
-    (e1->eval().type == strval && var == e1->eval().data.str)) {
-      return; //prevent shadowing
+  if(var == fun_name || (e1->eval().type == strval && var == e1->eval().data.str)) {
+    return; //prevent shadowing
+  }
+  this->e2->subst(val, var);
+}
+
+shared_ptr<Exp> EFix::apply(LitData val, const char* var) {
+  this->e2->subst(val, var);
+  return this->e2;
+}
+
+shared_ptr<Typ> EFix::typecheck() {
+
+  auto tin = this->tin;
+  auto tout = this->tout;
+  this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  check( this->e2->typecheck(), tin);
+  return make_shared<TFun>(tin, tout);
+}
+
+/***** EApp ******************************************************************/
+
+EApp::EApp(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
+
+LitData EApp::eval() {
+  typecheck();
+  LitData e1d = e1->eval();
+  LitData e2d = e2->eval();
+  //cout << "Application: " << *this->display() << endl;
+  if(e1d.type == funval) {
+    LitData vardata = e1d.data.fun->e1->eval();
+    if(vardata.type == strval) {
+      const char* var = vardata.data.str;
+      return e1d.data.fun->apply(e2d, var)->eval();
+    } else {
+      fprintf(stderr, "Invalid function application. Expected valid variable in fun\n");
+      exit(EXIT_FAILURE);
     }
-    this->e2->subst(val, var);
+  } else if (e1d.type == fixval) {
+    auto fixexp = e1d.data.fix;
+    LitData vardata = fixexp->e1->eval();
+    if(vardata.type == strval) {
+      const char* var = vardata.data.str;
+      const char* fun_name = fixexp->fun_name;
+      fixexp->apply(fixexp->eval(), fun_name);
+      LitData ret = fixexp->apply(e2d, var)->eval();
+      return ret;
+    } else {
+      fprintf(stderr, "Invalid function application. Expected valid variable in fun\n");
+      exit(EXIT_FAILURE);
+    }
+  } else {
+    fprintf(stderr, "Invalid function application.\n");
+    exit(EXIT_FAILURE);
   }
+}
 
-  shared_ptr<Exp> EFix::apply(LitData val, const char* var) {
-    this->e2->subst(val, var);
-    return this->e2;
-  }
-
-  shared_ptr<Typ> EFix::typecheck() {
-
-    auto tin = this->tin;
-    auto tout = this->tout;
-    this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+void EApp::subst(LitData val, const char* var) {
+  this->e1->subst(val, var);
+  this->e2->subst(val, var);
+}
+shared_ptr<Typ> EApp::typecheck() {
+  //printf("TC-APP\n");
+  TFun* tfun;
+  shared_ptr<Typ> tin, tout;
+  this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  shared_ptr<Typ> t1 = this->e1->typecheck();
+  //cout << "This should be a function: " << t1->display() << endl;
+  if((tfun = dynamic_cast<TFun*>(t1.get())) != nullptr) {
+    tin = tfun->tin;
     this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
-    check( this->e2->typecheck(), tin);
-    return make_shared<TFun>(tin, tout);
+    check(tin, this->e2->typecheck()); //exits if fails
+    tout = tfun->tout;
+    return tout;
+  } else {
+    cerr << "Expected function as first argument, given " << t1->display() << endl;
+    exit(EXIT_FAILURE);
   }
-  /***** EApp ******************************************************************/
+}
 
-  EApp::EApp(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
+/***** EPair ******************************************************************/
 
-  LitData EApp::eval() {
-    typecheck();
-    LitData e1d = e1->eval();
-    LitData e2d = e2->eval();
-    //cout << "Application: " << *this->display() << endl;
-    if(e1d.type == funval) {
-      LitData vardata = e1d.data.fun->e1->eval();
-      if(vardata.type == strval) {
-        const char* var = vardata.data.str;
-        return e1d.data.fun->apply(e2d, var)->eval();
-      } else {
-        fprintf(stderr, "Invalid function application. Expected valid variable in fun\n");
-        exit(EXIT_FAILURE);
-      }
-    } else if (e1d.type == fixval) {
-      auto fixexp = e1d.data.fix;
-      LitData vardata = fixexp->e1->eval();
-      if(vardata.type == strval) {
-        const char* var = vardata.data.str;
-        const char* fun_name = fixexp->fun_name;
-        fixexp->apply(fixexp->eval(), fun_name);
-        LitData ret = fixexp->apply(e2d, var)->eval();
-        return ret;
-      } else {
-        fprintf(stderr, "Invalid function application. Expected valid variable in fun\n");
-        exit(EXIT_FAILURE);
-      }
-    } else {
-      fprintf(stderr, "Invalid function application.\n");
-      exit(EXIT_FAILURE);
+EPair::EPair(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
+
+LitData EPair::eval() {
+  LitData ld;
+  ld.type = pairval;
+  ld.data.pair = this;
+  return ld;
+}
+
+void EPair::subst(LitData val, const char* var) {
+  this->e1->subst(val, var);
+  this->e2->subst(val, var);
+}
+
+shared_ptr<Typ> EPair::typecheck() {
+  auto t1 = this->e1->typecheck();
+  auto t2 = this->e2->typecheck();
+
+  this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+
+  return make_shared<TPair>(t1, t2);
+}
+
+/***** EFst ******************************************************************/
+
+EFst::EFst(shared_ptr<Exp> _e) : e(_e) { }
+
+LitData EFst::eval() {
+  typecheck();
+  EPair* epair = dynamic_cast<EPair*>(this->e.get());
+  if(epair != nullptr) {
+    return epair->e1->eval();
+  } else {
+    //check if EPair hidden by EVar
+    LitData edata = this->e->eval();
+    if(edata.type == pairval) {
+      epair = edata.data.pair;
+      return epair->e1->eval();
     }
+    cerr << "INTERNAL ERROR: FST TYPECHECK FAILED" << endl;
+    cerr << "Given " << *this->e->display() << endl;
+    cerr << "Type " << this->e->typecheck()->display() << endl;
+    raise(SIGINT);
+    exit(EXIT_FAILURE);
   }
+}
 
-  void EApp::subst(LitData val, const char* var) {
-    this->e1->subst(val, var);
-    this->e2->subst(val, var);
-  }
-  shared_ptr<Typ> EApp::typecheck() {
-    //printf("TC-APP\n");
-    TFun* tfun;
-    shared_ptr<Typ> tin, tout;
-    this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
-    shared_ptr<Typ> t1 = this->e1->typecheck();
-    //cout << "This should be a function: " << t1->display() << endl;
-    if((tfun = dynamic_cast<TFun*>(t1.get())) != nullptr) {
-      tin = tfun->tin;
-      this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
-      check(tin, this->e2->typecheck()); //exits if fails
-      tout = tfun->tout;
-      return tout;
-    } else {
-      cerr << "Expected function as first argument, given " << t1->display();
-      exit(EXIT_FAILURE);
+void EFst::subst(LitData val, const char* var) {
+  this->e->subst(val, var);
+}
+
+shared_ptr<Typ> EFst::typecheck() {
+  this->e->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  return this->e->typecheck();
+}
+
+/***** ESnd ******************************************************************/
+
+ESnd::ESnd(shared_ptr<Exp> _e) : e(_e) { }
+
+LitData ESnd::eval() {
+  typecheck();
+  EPair* epair = dynamic_cast<EPair*>(this->e.get());
+  if(epair != nullptr) {
+    return epair->e2->eval();
+  } else {
+    //check if EPair hidden by EVar
+    LitData edata = this->e->eval();
+    if(edata.type == pairval) {
+      epair = edata.data.pair;
+      return epair->e2->eval();
     }
+    cerr << "INTERNAL ERROR: FST TYPECHECK FAILED" << endl;
+    cerr << "Given " << *this->e->display() << endl;
+    cerr << "Type " << this->e->typecheck()->display() << endl;
+    raise(SIGINT);
+    exit(EXIT_FAILURE);
   }
+}
+
+void ESnd::subst(LitData val, const char* var) {
+  this->e->subst(val, var);
+}
+
+shared_ptr<Typ> ESnd::typecheck() {
+  this->e->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  return this->e->typecheck();
+}

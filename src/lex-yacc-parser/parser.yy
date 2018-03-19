@@ -58,6 +58,10 @@ using namespace std;
   UNIT        "()"
   INTTYPE     "int"
   BOOLTYPE    "bool"
+  UNITTYPE    "unit"
+  FIRST       "fst"
+  SECOND      "snd"
+  DOT         " . "
 ;
 
 %token <int> INT "vint"
@@ -86,6 +90,10 @@ exp:
   "var"                            { $$ = make_shared<EVar>($1);        }
 | "vint"                           { $$ = make_shared<ELit>($1);        }
 | "vbool"                          { $$ = make_shared<ELit>($1);        }
+| "()"                             { $$ = make_shared<EUnit>();       }
+| "(" exp1 " . " exp1 ")"          { $$ = make_shared<EPair>($2, $4);   }
+| "fst" exp                        { $$ = make_shared<EFst>($2);        }
+| "snd" exp                        { $$ = make_shared<ESnd>($2);        }
 | "let" "var" ":" typ "=" exp1 "in" exp1
                                    { $$ = make_shared<ELet>(make_shared<EVar>($2), $6, $8, $4);
                                      $$->ctx.insert({$2, $4}); }
@@ -110,7 +118,9 @@ exp:
 typ:
   "int"                           { $$ = make_shared<TInt>();        }
 | "bool"                          { $$ = make_shared<TBool>();       }
+| "unit"                          { $$ = make_shared<TUnit>();       }
 | typ "->" typ                    { $$ = make_shared<TFun>($1, $3);  }
+| typ "*" typ                     { $$ = make_shared<TPair>($1, $3); }
 
 %%
 

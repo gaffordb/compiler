@@ -6,7 +6,7 @@
 
 using namespace std;
 
-enum TData { ival, bval, strval, funval, fixval };
+enum TData { ival, bval, strval, funval, fixval, pairval, unitval };
 
 union LData {
   int i;
@@ -14,12 +14,15 @@ union LData {
   const char* str;
   struct EFun* fun;
   struct EFix* fix;
+  struct EPair* pair;
 };
 
 struct LitData {
   TData type;
   LData data;
+  //LitData(shared_ptr<Typ> typ, LitData ld);
 };
+
 
 struct Typ {
   //~Typ() = default;
@@ -36,6 +39,17 @@ struct TBool : public Typ {
   string display();
 };
 
+struct TUnit : public Typ {
+  TUnit();
+  string display();
+};
+
+struct TPair : public Typ {
+  shared_ptr<Typ> t1;
+  shared_ptr<Typ> t2;
+  TPair(shared_ptr<Typ> _t1, shared_ptr<Typ> _t2);
+  string display();
+};
 struct TFun : public Typ {
   shared_ptr<Typ> tin;
   shared_ptr<Typ> tout;
@@ -193,6 +207,44 @@ struct EApp : public Exp {
   void subst(LitData val, const char* var);
   shared_ptr<Typ> typecheck();
 };
+
+struct EPair : public Exp {
+  shared_ptr<Exp> e1;
+  shared_ptr<Exp> e2;
+  EPair(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct EFst : public Exp {
+  shared_ptr<Exp> e;
+  EFst(shared_ptr<Exp> _e);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct ESnd : public Exp {
+  shared_ptr<Exp> e;
+  ESnd(shared_ptr<Exp> _e);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct EUnit : public Exp {
+  EUnit();
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+LitData make_data(shared_ptr<Exp> e);
 
 //tostring junk
 std::ostream& operator<<(std::ostream& strm, LitData const& ld);
