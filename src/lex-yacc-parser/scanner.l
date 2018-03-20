@@ -7,7 +7,7 @@
 # include "parser.yy.hpp"
 #include <stdbool.h>
 #include <string.h>
-#define DEBUG_MODE false
+#define DEBUG_MODE true
 // Work around an incompatibility in flex (at least versions
 // 2.5.31 through 2.5.33): it generates code that does
 // not conform to C89.  See Debian bug 333231
@@ -18,10 +18,12 @@
 
 %option noyywrap nounput batch debug noinput nodefault
 
+comment "/*" ( [^*] | (\*+ [^"*/"]) )* \*+ \/
 int   [-]*[0-9]+
 bool  (#)(t|f)
 blank [ \t]
 %%
+{comment}+  { }
 {blank}+    { }
 [\n]+       { }
 
@@ -87,6 +89,10 @@ blank [ \t]
               return yy::parser::make_SETTER();   }
 "ref"       { if(DEBUG_MODE) {printf("token: |ref|\n");}
               return yy::parser::make_REF();   }
+"while"     { if(DEBUG_MODE) {printf("token: |while|\n");}
+              return yy::parser::make_WHILE();   }
+"do"        { if(DEBUG_MODE) {printf("token: |do|\n");}
+              return yy::parser::make_DO();   }
 
 [a-zA-Z][a-zA-Z0-9]* {
   const char *yycopy = strdup(yytext);

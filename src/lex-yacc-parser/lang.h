@@ -22,7 +22,7 @@ union LData {
   struct EFun* fun;
   struct EFix* fix;
   struct EPair* pair;
-  struct EPtr*  ptr;
+  struct EPtr* ptr;
 };
 
 struct LitData {
@@ -300,6 +300,15 @@ struct EPtr : public Exp {
   unsigned int addr;
   shared_ptr<Typ> t;
   EPtr(unsigned int addr, shared_ptr<Typ> _t);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct EWhile : public Exp {
+  shared_ptr<Exp> guard, body;
+  EWhile(shared_ptr<Exp> _guard, shared_ptr<Exp> _body);
   LitData eval();
   shared_ptr<string> display(void);
   void subst(LitData val, const char* var);

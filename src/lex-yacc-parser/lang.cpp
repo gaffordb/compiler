@@ -10,9 +10,9 @@ unsigned int g_stack_next_alloc = 1;
 unordered_map<unsigned int, shared_ptr<LitData> > g_stack;
 
 /***** MISC ******************************************************************/
-
+//for typechecking
 void check(shared_ptr<Typ> actual, shared_ptr<Typ> expected) {
-  string t1 = expected->display(), t2 = actual->display();
+  string t1 = actual->display(), t2 = expected->display();
   if(t1 == t2) {
     return;
   } else {
@@ -23,6 +23,7 @@ void check(shared_ptr<Typ> actual, shared_ptr<Typ> expected) {
   }
 }
 
+//for making data out of exp
 LitData make_data(shared_ptr<Exp> e) {
   auto typ = e->typecheck();
   string tbase = typ->display();
@@ -43,6 +44,7 @@ LitData make_data(shared_ptr<Exp> e) {
   return ret;
 }
 
+//for making exp out of data (if possible)
 std::pair<TData, shared_ptr<Exp> > data_to_exp(LitData ld) {
   TData t = ld.type;
   if(t == ival || t == bval || t == strval || t == unitval) {
@@ -77,6 +79,8 @@ unsigned int ptr_alloc() {
 }
 
 shared_ptr<LitData> get_ptr(unsigned int addr) {
+  printf("addr: %d, to be allocated: %d\n", addr, g_stack_next_alloc);
+  raise(SIGINT);
   //ensure ptr has been allocated
   if(addr < g_stack_next_alloc) {
     return g_stack[addr];
@@ -206,6 +210,8 @@ std::ostream& operator <<(std::ostream &strm, LitData const& ld) {
     case ptrval: {
       fprintf(stderr, "we here!\nm");
       strm << *(ld.data.ptr->display());
+      fprintf(stderr, "we heretoo!\nm");
+
       break;
     }
     default:
@@ -407,40 +413,52 @@ shared_ptr<string> EFst::display(void) {
   *ret = "(fst " + *this->e->display() + ")";
   return ret;
 }
+
 shared_ptr<string> ESnd::display(void) {
   shared_ptr<string> ret = make_shared<string>();
   *ret = "(snd " + *this->e->display() + ")";
   return ret;
 }
+
 shared_ptr<string> EUnit::display(void) {
   shared_ptr<string> ret = make_shared<string>();
   *ret = "()";
   return ret;
 }
+
 shared_ptr<string> ERef::display(void) {
   shared_ptr<string> ret = make_shared<string>();
   *ret = "(ref " + *this->e->display() + ")";
   return ret;
 }
+
 shared_ptr<string> EDeref::display(void) {
   shared_ptr<string> ret = make_shared<string>();
   *ret = "(#" + *this->e->display() + ")";
   return ret;
 }
+
 shared_ptr<string> ESet::display(void) {
   shared_ptr<string> ret = make_shared<string>();
   *ret = "(" + *this->e1->display() + " := " + *this->e2->display() + ")";
   return ret;
 }
+
 shared_ptr<string> ESeq::display(void) {
   shared_ptr<string> ret = make_shared<string>();
   *ret = "(" + *this->e1->display() + " ; " + *this->e2->display() + ")";
   return ret;
 }
+
 shared_ptr<string> EPtr::display(void) {
   shared_ptr<string> ret = make_shared<string>();
-  cout << "we hurr" << endl;
   *ret = "(Address: " + to_string(this->addr) + ")";
+  return ret;
+}
+
+shared_ptr<string> EWhile::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(while " + *this->guard->display() + " do " + *this->body->display() + ")";
   return ret;
 }
 
@@ -734,6 +752,8 @@ LitData ELet::eval() {
   if(e1d.type == strval) {
     const char* var = e1d.data.str;
     LitData e2d = e2->eval();
+    cout << "Type of data: " << e2d.type << endl;
+    cout << "Well, it's a ptr, so I should be able to print this: " << *e2d.data.ptr->display() << endl;
     e3->subst(e2d, var);
     LitData e3d = e3->eval();
     return e3d;
@@ -1024,15 +1044,20 @@ ERef::ERef(shared_ptr<Exp> _e) : e(_e) { }
 
 LitData ERef::eval() {
   typecheck();
+  //printf("Pre-alloc: %d\n", g_stack_next_alloc);
   unsigned int addr = ptr_alloc();
+  //printf("Allocated: %d\n", addr);
+  //printf("Post-alloc: %d\n", g_stack_next_alloc);
   auto data = this->e->eval();
   set_ptr(addr, make_shared<LitData>(data));
   auto eptr = make_shared<EPtr>(addr, this->e->typecheck());
+  //cout << "can we print it herept2?? " << *eptr->eval().data.fun->display() << endl;
   eptr->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   return eptr->eval();
 }
 
 void ERef::subst(LitData val, const char* var) {
+  printf("substituting in eref??\n");
   this->e->subst(val, var);
 }
 
@@ -1047,25 +1072,32 @@ EDeref::EDeref(shared_ptr<Exp> _e) : e(_e) { }
 
 LitData EDeref::eval() {
   typecheck();
-  EPtr* eptr = this->e->eval().data.ptr;
-  //EPtr* eptr = dynamic_cast<EPtr*>(this->e.get());
+  //EPtr* eptr = this->e->eval().data.ptr;
+  EVar* eref = dynamic_cast<EVar*>(this->e.get());
+  if(eref != nullptr) {
+    printf("Welp, I guess it's a ref...");
+  }
+  EPtr* eptr = dynamic_cast<EPtr*>(this->e.get());
   if(eptr != nullptr) {
     return *get_ptr(eptr->addr);
   } else {
-    cerr << "Expected e to be EPtr... Given " << this->e << endl;
+    cerr << "Expected e to be EPtr... Given " /*<< this->e*/ << endl;
     exit(EXIT_FAILURE);
   }
 }
 
 void EDeref::subst(LitData val, const char* var) {
+  printf("In Deref: Substituting a value into %s\n", var);
+  cout << "Value type: " << val.type << endl;
+  //cout << "Value data: " << *val.data.ptr->display() << endl; Get a real bad thing if I do this
   this->e->subst(val, var);
 }
 
 shared_ptr<Typ> EDeref::typecheck() {
   this->e->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
-  cout << "Expression: ";
-  cout << this->e << endl;
-  cout << this->e->eval() << endl;
+  //cout << "Expression: ";
+  //cout << this->e << endl;
+  //cout << this->e->eval() << endl;
   TRef* tref = dynamic_cast<TRef*>(this->e->typecheck().get());
   if(tref != nullptr) {
     return tref->t;
@@ -1081,7 +1113,7 @@ shared_ptr<Typ> EDeref::typecheck() {
   cerr << "Typecheck error:\n";
   cerr << "Expected <t>, given " << this->e->typecheck()->display() << endl;
   exit(EXIT_FAILURE);
-}
+  }
 }
 
 /***** ESet ******************************************************************/
@@ -1090,7 +1122,8 @@ ESet::ESet(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
 
 LitData ESet::eval() {
   typecheck();
-  EPtr* eptr = dynamic_cast<EPtr*>(this->e1.get());
+  EPtr* eptr = this->e1->eval().data.ptr;
+  //EPtr* eptr = dynamic_cast<EPtr*>(this->e1.get()->eval());
   if(eptr != nullptr) {
     set_ptr(eptr->addr, make_shared<LitData>(this->e2->eval()));
     return make_data(make_shared<EUnit>());
@@ -1114,6 +1147,7 @@ shared_ptr<Typ> ESet::typecheck() {
 
   auto expected = make_shared<TRef>(t2);
   check(t1, expected);
+
   return make_shared<TUnit>();
 }
 
@@ -1151,9 +1185,38 @@ LitData EPtr::eval() {
 
 void EPtr::subst(LitData val, const char* var) {
   //get to var hidden by ptr
-  data_to_exp(val).second->subst(val, var);
+  shared_ptr<Exp> derived = data_to_exp(val).second;
+  cout << "subbin' into: " << *derived->display() << endl;
+  derived->subst(val, var);
 }
 
 shared_ptr<Typ> EPtr::typecheck() {
   return make_shared<TRef>(this->t);
+}
+
+/***** EWhile ******************************************************************/
+
+EWhile::EWhile(shared_ptr<Exp> _guard, shared_ptr<Exp> _body) : guard(_guard), body(_body) { }
+
+LitData EWhile::eval() {
+  typecheck();
+  guard->eval();
+  if(guard->eval().data.b) {
+    body->eval();
+    this->eval();
+  }
+  return make_data(make_shared<EUnit>());
+}
+
+void EWhile::subst(LitData val, const char* var) {
+  this->guard->subst(val, var);
+  this->body->subst(val, var);
+}
+
+shared_ptr<Typ> EWhile::typecheck() {
+  this->guard->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  this->body->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  check(this->guard->typecheck(), make_shared<TBool>());
+
+  return make_shared<TUnit>();
 }
