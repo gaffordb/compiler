@@ -39,10 +39,10 @@ blank [ \t]
   "/*"           { ++comment_nesting; }
   "*"+"/"        { if (comment_nesting) --comment_nesting;
                    else BEGIN(INITIAL); }
-  "*"+           ; /* Line 11 */
-  [^/*\n]+       ; /* Line 12 */
-  [/]            ; /* Line 13 */
-  \n             ; /* Line 14 */
+  "*"+           ;
+  [^/*\n]+       ; /**/
+  [/]            ;
+  \n             ; 
 }
 
 {blank}+    { }

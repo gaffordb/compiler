@@ -1004,23 +1004,23 @@ YY_RULE_SETUP
 case 4:
 YY_RULE_SETUP
 #line 42 "src/lex-yacc-parser/scanner.l"
-; /* Line 11 */
+;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 43 "src/lex-yacc-parser/scanner.l"
-; /* Line 12 */
+; /**/
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 44 "src/lex-yacc-parser/scanner.l"
-; /* Line 13 */
+;
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
 #line 45 "src/lex-yacc-parser/scanner.l"
-; /* Line 14 */
+; 
 	YY_BREAK
 
 case 8:
