@@ -7,23 +7,44 @@
 # include "parser.yy.hpp"
 #include <stdbool.h>
 #include <string.h>
-#define DEBUG_MODE true
+#define DEBUG_MODE false
 // Work around an incompatibility in flex (at least versions
 // 2.5.31 through 2.5.33): it generates code that does
 // not conform to C89.  See Debian bug 333231
 // <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=333231>.
+
+//CREDIT TO:
+//https://stackoverflow.com/questions/34493467/how-to-handle-nested-comment-in-flex
+//for approach to multiline comments
+
 # undef yywrap
 # define yywrap() 1
 %}
 
 %option noyywrap nounput batch debug noinput nodefault
 
-comment "/*" ( [^*] | (\*+ [^"*/"]) )* \*+ \/
+
 int   [-]*[0-9]+
 bool  (#)(t|f)
 blank [ \t]
+%x IN_COMMENT
+
 %%
-{comment}+  { }
+  int comment_nesting = 0;
+
+<INITIAL>{
+"/*"      {BEGIN(IN_COMMENT);}
+}
+<IN_COMMENT>{
+  "/*"           { ++comment_nesting; }
+  "*"+"/"        { if (comment_nesting) --comment_nesting;
+                   else BEGIN(INITIAL); }
+  "*"+           ; /* Line 11 */
+  [^/*\n]+       ; /* Line 12 */
+  [/]            ; /* Line 13 */
+  \n             ; /* Line 14 */
+}
+
 {blank}+    { }
 [\n]+       { }
 

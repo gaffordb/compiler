@@ -17,6 +17,7 @@ using namespace std;
 
 void interpret(string s) {
   const char* arg = s.c_str();
+
   execlp("compiler", arg);
 }
 
