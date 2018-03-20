@@ -42,7 +42,7 @@ blank [ \t]
   "*"+           ;
   [^/*\n]+       ; /**/
   [/]            ;
-  \n             ; 
+  \n             ;
 }
 
 {blank}+    { }
@@ -92,9 +92,9 @@ blank [ \t]
               return yy::parser::make_UNIT();   }
 "int"       { if(DEBUG_MODE) {printf("token: |int|\n");}
               return yy::parser::make_INTTYPE();   }
-"bool"       { if(DEBUG_MODE) {printf("token: |bool|\n");}
+"bool"      { if(DEBUG_MODE) {printf("token: |bool|\n");}
               return yy::parser::make_BOOLTYPE();   }
-"unit"       { if(DEBUG_MODE) {printf("token: |unit|\n");}
+"unit"      { if(DEBUG_MODE) {printf("token: |unit|\n");}
               return yy::parser::make_UNITTYPE();   }
 "fst"       { if(DEBUG_MODE) {printf("token: |fst|\n");}
               return yy::parser::make_FIRST();   }

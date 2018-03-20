@@ -299,6 +299,7 @@ struct ESeq : public Exp {
 struct EPtr : public Exp {
   unsigned int addr;
   shared_ptr<Typ> t;
+  shared_ptr<EPtr> self;
   EPtr(unsigned int addr, shared_ptr<Typ> _t);
   LitData eval();
   shared_ptr<string> display(void);

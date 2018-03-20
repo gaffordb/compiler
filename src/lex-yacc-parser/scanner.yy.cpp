@@ -1020,7 +1020,7 @@ case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
 #line 45 "src/lex-yacc-parser/scanner.l"
-; 
+;
 	YY_BREAK
 
 case 8:

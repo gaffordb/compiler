@@ -79,8 +79,8 @@ unsigned int ptr_alloc() {
 }
 
 shared_ptr<LitData> get_ptr(unsigned int addr) {
-  printf("addr: %d, to be allocated: %d\n", addr, g_stack_next_alloc);
-  raise(SIGINT);
+  //printf("addr: %d, to be allocated: %d\n", addr, g_stack_next_alloc);
+  //raise(SIGINT);
   //ensure ptr has been allocated
   if(addr < g_stack_next_alloc) {
     return g_stack[addr];
@@ -752,8 +752,8 @@ LitData ELet::eval() {
   if(e1d.type == strval) {
     const char* var = e1d.data.str;
     LitData e2d = e2->eval();
-    cout << "Type of data: " << e2d.type << endl;
-    cout << "Well, it's a ptr, so I should be able to print this: " << *e2d.data.ptr->display() << endl;
+    //cout << "Type of data: " << e2d.type << endl;
+    //cout << "Well, it's a ptr, so I should be able to print this: " << *e2d.data.ptr->display() << endl;
     e3->subst(e2d, var);
     LitData e3d = e3->eval();
     return e3d;
@@ -1051,9 +1051,15 @@ LitData ERef::eval() {
   auto data = this->e->eval();
   set_ptr(addr, make_shared<LitData>(data));
   auto eptr = make_shared<EPtr>(addr, this->e->typecheck());
+  //eptr->self = eptr; //to prevent this from being destroyed lol?
   //cout << "can we print it herept2?? " << *eptr->eval().data.fun->display() << endl;
   eptr->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
-  return eptr->eval();
+  LitData ld;
+  ld.type = ptrval;
+  ld.data.ptr = eptr.get();
+  ld.data.ptr->self = eptr; //to prevent eptr from being destroyed lol
+  return ld;
+  //return make_data(eptr->self);
 }
 
 void ERef::subst(LitData val, const char* var) {
@@ -1075,13 +1081,13 @@ LitData EDeref::eval() {
   //EPtr* eptr = this->e->eval().data.ptr;
   EVar* eref = dynamic_cast<EVar*>(this->e.get());
   if(eref != nullptr) {
-    printf("Welp, I guess it's a ref...");
+    printf("Welp, I guess it's a var...");
   }
-  EPtr* eptr = dynamic_cast<EPtr*>(this->e.get());
+  EPtr* eptr = dynamic_cast<EPtr*>(this->e->eval().data.ptr);
   if(eptr != nullptr) {
     return *get_ptr(eptr->addr);
   } else {
-    cerr << "Expected e to be EPtr... Given " /*<< this->e*/ << endl;
+    cerr << "Expected e to be EPtr... Given " << this->e << endl;
     exit(EXIT_FAILURE);
   }
 }
@@ -1179,14 +1185,14 @@ EPtr::EPtr(unsigned int _addr, shared_ptr<Typ> _t) : addr(_addr), t(_t) { }
 LitData EPtr::eval() {
   LitData ret;
   ret.type = ptrval;
-  ret.data.ptr = this;
+  ret.data.ptr = this->self.get();
   return ret;
 }
 
 void EPtr::subst(LitData val, const char* var) {
   //get to var hidden by ptr
   shared_ptr<Exp> derived = data_to_exp(val).second;
-  cout << "subbin' into: " << *derived->display() << endl;
+  //OLDcout << "subbin' into: " << *derived->display() << endl;
   derived->subst(val, var);
 }
 
