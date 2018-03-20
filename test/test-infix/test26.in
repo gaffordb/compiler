@@ -1,0 +1,9 @@
+let f : <int> -> <int> -> unit =
+  fun (x:<int>) : <int> -> unit |->
+    fun(y:<int>) : unit |->
+      let z : int = #x in
+      x := #y; y := z + 1
+in
+  let x1 : <int> = ref 2 in
+  let y1 : <int> = ref 5 in
+  f x1 y1

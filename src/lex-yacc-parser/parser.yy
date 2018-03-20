@@ -89,6 +89,8 @@ prog:
 
 exp1:
   exp1 exp                         { $$ = make_shared<EApp>($1, $2);    }
+| "fst" exp                        { $$ = make_shared<EFst>($2);        }
+| "snd" exp                        { $$ = make_shared<ESnd>($2);        }
 | exp                              { std::swap ($$, $1);                }
 
 exp:
@@ -96,9 +98,6 @@ exp:
 | "vint"                           { $$ = make_shared<ELit>($1);        }
 | "vbool"                          { $$ = make_shared<ELit>($1);        }
 | "()"                             { $$ = make_shared<EUnit>();         }
-| "(" exp1 " . " exp1 ")"          { $$ = make_shared<EPair>($2, $4);   }
-| "fst" exp                        { $$ = make_shared<EFst>($2);        }
-| "snd" exp                        { $$ = make_shared<ESnd>($2);        }
 | "let" "var" ":" typ "=" exp1 "in" exp1
                                    { $$ = make_shared<ELet>(make_shared<EVar>($2), $6, $8, $4);
                                      $$->ctx.insert({$2, $4});          }
@@ -109,14 +108,15 @@ exp:
                                    { $$ = make_shared<EFix>($2, make_shared<EVar>($4), $11, $6, $9);
                                      $$->ctx.insert({$2, $9});
                                      $$->ctx.insert({$4, $6});          }
+| "(" exp1 " . " exp1 ")"           { $$ = make_shared<EPair>($2, $4);   }
 |  "(" exp1 ")"                    { std::swap ($$, $2);                }
-|  exp1 "+" exp1                   { $$ = make_shared<EPlus>($1, $3);   }
 |  exp1 "*" exp1                   { $$ = make_shared<EMult>($1, $3);   }
+|  exp1 "/" exp1                   { $$ = make_shared<EDiv>($1, $3);    }
+|  exp1 "-" exp1                   { $$ = make_shared<EMinus>($1, $3);  }
+|  exp1 "+" exp1                   { $$ = make_shared<EPlus>($1, $3);   }
 |  "if" exp1 "then" exp1 "else" exp1  { $$ = make_shared<EIf>($2, $4, $6); }
 |  exp1 "<=" exp1                  { $$ = make_shared<ELeq>($1, $3);    }
 |  exp1 ">" exp1                   { $$ = make_shared<EBigger>($1, $3); }
-|  exp1 "-" exp1                   { $$ = make_shared<EMinus>($1, $3);  }
-|  exp1 "/" exp1                   { $$ = make_shared<EDiv>($1, $3);    }
 |  "ref" exp1                      { $$ = make_shared<ERef>($2);        }
 |  exp1 ":=" exp1                  { $$ = make_shared<ESet>($1, $3);    }
 |  "#" exp1                        { $$ = make_shared<EDeref>($2);      }

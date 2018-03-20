@@ -6,11 +6,14 @@
 
 using namespace std;
 
-
-
 /*************************Data**************************************/
 
-enum TData { ival, bval, strval, funval, fixval, pairval, unitval };
+enum TData {
+  ival, bval,
+  strval, funval,
+  fixval, pairval,
+  unitval, ptrval
+};
 
 union LData {
   int i;
@@ -19,6 +22,7 @@ union LData {
   struct EFun* fun;
   struct EFix* fix;
   struct EPair* pair;
+  struct EPtr*  ptr;
 };
 
 struct LitData {
@@ -292,14 +296,24 @@ struct ESeq : public Exp {
   shared_ptr<Typ> typecheck();
 };
 
+struct EPtr : public Exp {
+  unsigned int addr;
+  shared_ptr<Typ> t;
+  EPtr(unsigned int addr, shared_ptr<Typ> _t);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
 /*************************STACK**************************************/
 
-extern unordered_map<unsigned int, shared_ptr<Exp> > g_stack;
+extern unordered_map<unsigned int, shared_ptr<LitData> > g_stack;
 extern unsigned int g_stack_next_alloc;
 
-void set_ptr(unsigned int addr, shared_ptr<Exp> val);
+void set_ptr(unsigned int addr, shared_ptr<LitData> val);
 unsigned int ptr_alloc();
-shared_ptr<Exp> get_ptr(unsigned int addr);
+shared_ptr<LitData> get_ptr(unsigned int addr);
 
 /*************************MISC**************************************/
 
