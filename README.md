@@ -1,6 +1,12 @@
 # Compiler
 #### Created by Ben Gafford
-Compiler built in C++.  
+Compiler built in C++. 
+Mastery components completed:
+* githooks
+* line-and-column error information
+* lists
+* arrays
+* second final project addition (repl & multiline nested comments)
 
 ## Language Syntax
 Language is defined as the following:   
