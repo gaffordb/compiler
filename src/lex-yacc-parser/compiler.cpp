@@ -13,7 +13,7 @@ using namespace std;
 
 int main(int argc, char **argv) {
   int c;
-  bool blex = false;
+  bool bdebug = false;
   bool bparse = false;
   bool step = false;
   if(argc < 2) {
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
   while(1) {
     static struct option long_options[] =
     {
-      {"lex", no_argument, NULL, 'l'},
+      {"debug", no_argument, NULL, 'l'},
       {"parse", no_argument, NULL, 'p'},
       {"help", no_argument, NULL, 'h'},
       {"step", no_argument, NULL, 's'}
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
         case 'h': {
           printf("Usage: compiler [flags] [args]\n");
           printf("Available flags:\n--parse\tprints the output from parsing.\n");
-          printf("--lex\tprints the output from lexing.\n");
+          printf("--debug\tprints out debug information during parsing\n");
           printf("--help\tdisplays program usage information.\n");
           return 0;
           break;
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
       }
     }
     parser_driver driver (argv[optind]);
-    shared_ptr<Exp> expr = driver.parse(blex);
+    shared_ptr<Exp> expr = driver.parse(bdebug);
     if(bparse){
       std::cout << expr << std::endl;
       return 0;

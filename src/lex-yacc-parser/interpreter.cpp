@@ -54,9 +54,12 @@ void quit() {
 }
 int main(void) {
   curses_init();
-  addstr("Welcome to this shitty language's repl!\n");
+  addstr("Welcome to the repl!\n");
   addstr("Keep in mind that state does not persist across calls!\n");
-  addstr("Try not to have too much fun with this bad boy...\n");
+  addstr("Deletion is currently not an option, so be careful with your keystrokes!\n");
+  addstr("Also, the functionality of the arrow keys is purely cosmetic. Avoid using it, it's just confusing.\n");
+  addstr("Also, if you type invalid commands compiler will fail and exit this function not-so-gracefully.\n");
+  addstr("In that case, remember that `reset` exists to fix your terminal.\n");
   addstr("Press <esc> to exit.\n");
   //wrefresh(stdscr);
   string curline;
@@ -66,7 +69,7 @@ int main(void) {
   int last_line = 0;
   int line_length = 0;
   int x = 0;
-  int y = 4;
+  int y = 7;
   int c;
   //int addstr(const char *str)
   while(1) {
@@ -86,7 +89,7 @@ int main(void) {
           continue;
         }
         curline = all_lines.at(line_num);
-        strm.flush();
+        stringstream().swap(strm); //flush strm
         strm << curline;
         printw("%s", curline.c_str());
         move(y, (x += curline.length()));
@@ -123,6 +126,8 @@ int main(void) {
         move(++y, (x = 0));
         break; //exit to outer loop and interpret
       } else if(c == KEY_BACKSPACE || c == KEY_DC || c == 127) {
+        //Deleting is too hard -- Disabled for now!
+        /*
         x = x - 1 >= 2 ? x-1 : 2;
         move(y, x);
         delch();
@@ -131,7 +136,8 @@ int main(void) {
         strm.get();
         strm.seekg(old_pos); //could do strm.end if this doesn't work
         line_length = line_length - 1 > 0 ? line_length - 1 : 0;
-      } else if(c <= 126 && c >= 32){
+        */
+      } else if(c <= 126 && c >= 32){ //valid char
         addch(c);
         move(y, ++x);
         line_length++;
