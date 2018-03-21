@@ -49,7 +49,7 @@
 
 #line 51 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:412
 // Unqualified %code blocks.
-#line 29 "src/lex-yacc-parser/parser.yy" // lalr1.cc:413
+#line 35 "src/lex-yacc-parser/parser.yy" // lalr1.cc:413
 
 #include "parser_driver.h"
 #include "lang.h"
@@ -71,6 +71,25 @@ using namespace std;
 # endif
 #endif
 
+#define YYRHSLOC(Rhs, K) ((Rhs)[K].location)
+/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
+   If N is 0, then set CURRENT to the empty location which ends
+   the previous symbol: RHS[0] (always defined).  */
+
+# ifndef YYLLOC_DEFAULT
+#  define YYLLOC_DEFAULT(Current, Rhs, N)                               \
+    do                                                                  \
+      if (N)                                                            \
+        {                                                               \
+          (Current).begin  = YYRHSLOC (Rhs, 1).begin;                   \
+          (Current).end    = YYRHSLOC (Rhs, N).end;                     \
+        }                                                               \
+      else                                                              \
+        {                                                               \
+          (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;      \
+        }                                                               \
+    while (/*CONSTCOND*/ false)
+# endif
 
 
 // Suppress unused-variable warnings by "using" E.
@@ -123,7 +142,7 @@ using namespace std;
 
 
 namespace yy {
-#line 127 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:479
+#line 146 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:479
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -232,7 +251,7 @@ namespace yy {
 
   inline
   parser::stack_symbol_type::stack_symbol_type (state_type s, symbol_type& that)
-    : super_type (s)
+    : super_type (s, that.location)
   {
       switch (that.type_get ())
     {
@@ -297,6 +316,7 @@ namespace yy {
         break;
     }
 
+    location = that.location;
     return *this;
   }
 
@@ -324,7 +344,8 @@ namespace yy {
     if (yysym.empty ())
       std::abort ();
     yyo << (yytype < yyntokens_ ? "token" : "nterm")
-        << ' ' << yytname_[yytype] << " (";
+        << ' ' << yytname_[yytype] << " ("
+        << yysym.location << ": ";
     YYUSE (yytype);
     yyo << ')';
   }
@@ -418,6 +439,9 @@ namespace yy {
     /// The lookahead symbol.
     symbol_type yyla;
 
+    /// The locations where the error started and ended.
+    stack_symbol_type yyerror_range[3];
+
     /// The return value of parse ().
     int yyresult;
 
@@ -427,6 +451,14 @@ namespace yy {
       {
     YYCDEBUG << "Starting parse" << std::endl;
 
+
+    // User initialization code.
+    #line 28 "src/lex-yacc-parser/parser.yy" // lalr1.cc:745
+{
+  //empty
+}
+
+#line 462 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:745
 
     /* Initialize the stack.  The initial state will be set in
        yynewstate, since the latter expects the semantical and the
@@ -542,6 +574,11 @@ namespace yy {
     }
 
 
+      // Compute the default @$.
+      {
+        slice<stack_symbol_type, stack_type> slice (yystack_, yylen);
+        YYLLOC_DEFAULT (yylhs.location, slice, yylen);
+      }
 
       // Perform the reduction.
       YY_REDUCE_PRINT (yyn);
@@ -550,275 +587,275 @@ namespace yy {
           switch (yyn)
             {
   case 2:
-#line 110 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 116 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { *ret = yystack_[1].value.as<  shared_ptr<Exp>  > (); }
-#line 556 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 593 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 3:
-#line 111 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 117 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { }
-#line 562 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 599 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 4:
-#line 115 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 121 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EApp>(yystack_[1].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ());    }
-#line 568 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 605 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 5:
-#line 116 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 122 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EFst>(yystack_[0].value.as<  shared_ptr<Exp>  > ());        }
-#line 574 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 611 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 6:
-#line 117 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
-    { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ESnd>(yystack_[0].value.as<  shared_ptr<Exp>  > ());        }
-#line 580 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
-    break;
-
-  case 7:
-#line 118 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
-    { std::swap (yylhs.value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ());                }
-#line 586 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
-    break;
-
-  case 8:
-#line 121 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
-    { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EVar>(yystack_[0].value.as< const char* > ());        }
-#line 592 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
-    break;
-
-  case 9:
-#line 122 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
-    { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ELit>(yystack_[0].value.as< int > ());        }
-#line 598 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
-    break;
-
-  case 10:
 #line 123 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
-    { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ELit>(yystack_[0].value.as< bool > ());        }
-#line 604 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
-    break;
-
-  case 11:
-#line 124 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
-    { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EUnit>();         }
-#line 610 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
-    break;
-
-  case 12:
-#line 126 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
-    { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ELet>(make_shared<EVar>(yystack_[6].value.as< const char* > ()), yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > (), yystack_[4].value.as<  shared_ptr<Typ>  > ());
-                                     yylhs.value.as<  shared_ptr<Exp>  > ()->ctx.insert({yystack_[6].value.as< const char* > (), yystack_[4].value.as<  shared_ptr<Typ>  > ()});          }
+    { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ESnd>(yystack_[0].value.as<  shared_ptr<Exp>  > ());        }
 #line 617 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
-  case 13:
+  case 7:
+#line 124 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+    { std::swap (yylhs.value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ());                }
+#line 623 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+    break;
+
+  case 8:
+#line 127 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+    { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EVar>(yystack_[0].value.as< const char* > ());        }
+#line 629 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+    break;
+
+  case 9:
+#line 128 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+    { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ELit>(yystack_[0].value.as< int > ());        }
+#line 635 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+    break;
+
+  case 10:
 #line 129 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+    { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ELit>(yystack_[0].value.as< bool > ());        }
+#line 641 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+    break;
+
+  case 11:
+#line 130 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+    { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EUnit>();         }
+#line 647 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+    break;
+
+  case 12:
+#line 132 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+    { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ELet>(make_shared<EVar>(yystack_[6].value.as< const char* > ()), yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > (), yystack_[4].value.as<  shared_ptr<Typ>  > ());
+                                     yylhs.value.as<  shared_ptr<Exp>  > ()->ctx.insert({yystack_[6].value.as< const char* > (), yystack_[4].value.as<  shared_ptr<Typ>  > ()});          }
+#line 654 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+    break;
+
+  case 13:
+#line 135 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EFun>(make_shared<EVar>(yystack_[7].value.as< const char* > ()), yystack_[0].value.as<  shared_ptr<Exp>  > (), yystack_[5].value.as<  shared_ptr<Typ>  > (), yystack_[2].value.as<  shared_ptr<Typ>  > ());
                                      yylhs.value.as<  shared_ptr<Exp>  > ()->ctx.insert({yystack_[7].value.as< const char* > (), yystack_[5].value.as<  shared_ptr<Typ>  > ()});          }
-#line 624 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 661 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 14:
-#line 132 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 138 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EFix>(yystack_[9].value.as< const char* > (), make_shared<EVar>(yystack_[7].value.as< const char* > ()), yystack_[0].value.as<  shared_ptr<Exp>  > (), yystack_[5].value.as<  shared_ptr<Typ>  > (), yystack_[2].value.as<  shared_ptr<Typ>  > ());
                                      yylhs.value.as<  shared_ptr<Exp>  > ()->ctx.insert({yystack_[9].value.as< const char* > (), make_shared<TFun>(yystack_[5].value.as<  shared_ptr<Typ>  > (), yystack_[2].value.as<  shared_ptr<Typ>  > ())});            //ctx for f
                                      yylhs.value.as<  shared_ptr<Exp>  > ()->ctx.insert({yystack_[7].value.as< const char* > (), yystack_[5].value.as<  shared_ptr<Typ>  > ()});          }
-#line 632 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 669 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 15:
-#line 135 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 141 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EPair>(yystack_[3].value.as<  shared_ptr<Exp>  > (), yystack_[1].value.as<  shared_ptr<Exp>  > ());   }
-#line 638 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 675 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 16:
-#line 136 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 142 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { std::swap (yylhs.value.as<  shared_ptr<Exp>  > (), yystack_[1].value.as<  shared_ptr<Exp>  > ());                }
-#line 644 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 681 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 17:
-#line 137 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 143 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EMult>(yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ());   }
-#line 650 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 687 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 18:
-#line 138 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 144 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EDiv>(yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ());    }
-#line 656 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 693 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 19:
-#line 139 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 145 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EMinus>(yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ());  }
-#line 662 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 699 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 20:
-#line 140 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 146 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EPlus>(yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ());   }
-#line 668 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 705 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 21:
-#line 141 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 147 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EIf>(yystack_[4].value.as<  shared_ptr<Exp>  > (), yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ()); }
-#line 674 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 711 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 22:
-#line 142 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 148 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EWhile>(yystack_[3].value.as<  shared_ptr<Exp>  > (), yystack_[1].value.as<  shared_ptr<Exp>  > ());  }
-#line 680 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 717 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 23:
-#line 143 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 149 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ELeq>(yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ());    }
-#line 686 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 723 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 24:
-#line 144 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 150 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EBigger>(yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ()); }
-#line 692 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 729 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 25:
-#line 145 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 151 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EGeq>(yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ());    }
-#line 698 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 735 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 26:
-#line 146 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 152 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ESmaller>(yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ());}
-#line 704 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 741 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 27:
-#line 147 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 153 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ERef>(yystack_[0].value.as<  shared_ptr<Exp>  > ());        }
-#line 710 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 747 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 28:
-#line 148 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 154 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ESet>(yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ());    }
-#line 716 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 753 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 29:
-#line 149 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 155 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EDeref>(yystack_[0].value.as<  shared_ptr<Exp>  > ());      }
-#line 722 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 759 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 30:
-#line 150 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 156 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ESeq>(yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ());    }
-#line 728 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 765 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 31:
-#line 151 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 157 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EArrRef>(yystack_[1].value.as<  shared_ptr<Exp>  > (), yystack_[3].value.as<  shared_ptr<Typ>  > ()); }
-#line 734 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 771 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 32:
-#line 152 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 158 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EArrGet>(yystack_[3].value.as<  shared_ptr<Exp>  > (), yystack_[1].value.as<  shared_ptr<Exp>  > ()); }
-#line 740 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 777 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 33:
-#line 153 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 159 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EList>(yystack_[0].value.as<  shared_ptr<Typ>  > ());        }
-#line 746 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 783 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 34:
-#line 154 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 160 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ECons>(yystack_[2].value.as<  shared_ptr<Exp>  > (), yystack_[0].value.as<  shared_ptr<Exp>  > ());   }
-#line 752 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 789 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 35:
-#line 155 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 161 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ECar>(yystack_[0].value.as<  shared_ptr<Exp>  > ());        }
-#line 758 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 795 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 36:
-#line 156 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 162 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<ECdr>(yystack_[0].value.as<  shared_ptr<Exp>  > ());        }
-#line 764 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 801 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 37:
-#line 157 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 163 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Exp>  > () = make_shared<EEmpty>(yystack_[0].value.as<  shared_ptr<Exp>  > ());      }
-#line 770 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 807 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 38:
-#line 160 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 166 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Typ>  > () = make_shared<TInt>();        }
-#line 776 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 813 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 39:
-#line 161 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 167 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Typ>  > () = make_shared<TBool>();       }
-#line 782 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 819 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 40:
-#line 162 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 168 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Typ>  > () = make_shared<TUnit>();       }
-#line 788 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 825 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 41:
-#line 163 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 169 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Typ>  > () = make_shared<TFun>(yystack_[2].value.as<  shared_ptr<Typ>  > (), yystack_[0].value.as<  shared_ptr<Typ>  > ());  }
-#line 794 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 831 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 42:
-#line 164 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 170 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Typ>  > () = make_shared<TPair>(yystack_[2].value.as<  shared_ptr<Typ>  > (), yystack_[0].value.as<  shared_ptr<Typ>  > ()); }
-#line 800 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 837 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 43:
-#line 165 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 171 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Typ>  > () = make_shared<TRef>(yystack_[1].value.as<  shared_ptr<Typ>  > ());      }
-#line 806 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 843 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 44:
-#line 166 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 172 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Typ>  > () = make_shared<TArray>(yystack_[1].value.as<  shared_ptr<Typ>  > ());    }
-#line 812 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 849 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
   case 45:
-#line 167 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
+#line 173 "src/lex-yacc-parser/parser.yy" // lalr1.cc:859
     { yylhs.value.as<  shared_ptr<Typ>  > () = make_shared<TList>(yystack_[1].value.as<  shared_ptr<Typ>  > ());     }
-#line 818 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 855 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
     break;
 
 
-#line 822 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
+#line 859 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:859
             default:
               break;
             }
@@ -846,10 +883,11 @@ namespace yy {
     if (!yyerrstatus_)
       {
         ++yynerrs_;
-        error (yysyntax_error_ (yystack_[0].state, yyla));
+        error (yyla.location, yysyntax_error_ (yystack_[0].state, yyla));
       }
 
 
+    yyerror_range[1].location = yyla.location;
     if (yyerrstatus_ == 3)
       {
         /* If just tried and failed to reuse lookahead token after an
@@ -879,6 +917,7 @@ namespace yy {
        code.  */
     if (false)
       goto yyerrorlab;
+    yyerror_range[1].location = yystack_[yylen - 1].location;
     /* Do not reclaim the symbols of the rule whose action triggered
        this YYERROR.  */
     yypop_ (yylen);
@@ -910,11 +949,14 @@ namespace yy {
           if (yystack_.size () == 1)
             YYABORT;
 
+          yyerror_range[1].location = yystack_[0].location;
           yy_destroy_ ("Error: popping", yystack_[0]);
           yypop_ ();
           YY_STACK_PRINT ();
         }
 
+      yyerror_range[2].location = yyla.location;
+      YYLLOC_DEFAULT (error_token.location, yyerror_range, 2);
 
       // Shift the error token.
       error_token.state = yyn;
@@ -968,7 +1010,7 @@ namespace yy {
   void
   parser::error (const syntax_error& yyexc)
   {
-    error (yyexc.what());
+    error (yyexc.location, yyexc.what());
   }
 
   // Generate an error message.
@@ -1406,11 +1448,11 @@ namespace yy {
   const unsigned char
   parser::yyrline_[] =
   {
-       0,   110,   110,   111,   115,   116,   117,   118,   121,   122,
-     123,   124,   125,   128,   131,   135,   136,   137,   138,   139,
-     140,   141,   142,   143,   144,   145,   146,   147,   148,   149,
-     150,   151,   152,   153,   154,   155,   156,   157,   160,   161,
-     162,   163,   164,   165,   166,   167
+       0,   116,   116,   117,   121,   122,   123,   124,   127,   128,
+     129,   130,   131,   134,   137,   141,   142,   143,   144,   145,
+     146,   147,   148,   149,   150,   151,   152,   153,   154,   155,
+     156,   157,   158,   159,   160,   161,   162,   163,   166,   167,
+     168,   169,   170,   171,   172,   173
   };
 
   // Print the state stack on the debug stream.
@@ -1445,9 +1487,9 @@ namespace yy {
 
 
 } // yy
-#line 1449 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:1167
-#line 169 "src/lex-yacc-parser/parser.yy" // lalr1.cc:1168
+#line 1491 "src/lex-yacc-parser/parser.yy.cpp" // lalr1.cc:1167
+#line 175 "src/lex-yacc-parser/parser.yy" // lalr1.cc:1168
 
 
 // NOTE: Bison's error reporting simply forwards to the driver
-void yy::parser::error(const std::string &m) { driver.error(m); }
+void yy::parser::error(const yy::parser::location_type& l, const std::string &m) { driver.error(l, m); }

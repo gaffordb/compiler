@@ -606,12 +606,12 @@ int yy_flex_debug = 1;
 
 static yyconst flex_int16_t yy_rule_linenum[60] =
     {   0,
-       36,   39,   40,   42,   43,   44,   45,   48,   49,   51,
-       53,   55,   57,   59,   61,   63,   65,   67,   69,   71,
-       73,   75,   77,   79,   81,   83,   85,   87,   89,   91,
-       93,   95,   97,   99,  101,  103,  105,  107,  109,  111,
-      113,  115,  117,  119,  121,  123,  125,  127,  129,  131,
-      133,  135,  137,  139,  141,  145,  155,  168,  177
+       45,   48,   49,   51,   52,   53,   54,   57,   58,   60,
+       62,   64,   66,   68,   70,   72,   74,   76,   78,   80,
+       82,   84,   86,   88,   90,   92,   94,   96,   98,  100,
+      102,  104,  106,  108,  110,  112,  114,  116,  118,  120,
+      122,  124,  126,  128,  130,  132,  134,  136,  138,  140,
+      142,  144,  146,  148,  150,  154,  164,  177,  186
     } ;
 
 /* The intent behind this definition is that it'll catch
@@ -640,13 +640,16 @@ char *yytext;
 
 //CREDIT TO:
 //https://stackoverflow.com/questions/34493467/how-to-handle-nested-comment-in-flex
-//for approach to multiline comments
+//for help w/ multiline comments
 
 # undef yywrap
 # define yywrap() 1
+static yy::location loc;
 #define YY_NO_INPUT 1
 
-#line 650 "src/lex-yacc-parser/scanner.yy.cpp"
+#line 34 "src/lex-yacc-parser/scanner.l"
+  #define YY_USER_ACTION  loc.columns (yyleng);
+#line 653 "src/lex-yacc-parser/scanner.yy.cpp"
 
 #define INITIAL 0
 #define IN_COMMENT 1
@@ -887,11 +890,15 @@ YY_DECL
 	register int yy_act;
     
 /* %% [7.0] user's declarations go here */
-#line 32 "src/lex-yacc-parser/scanner.l"
+#line 37 "src/lex-yacc-parser/scanner.l"
 
   int comment_nesting = 0;
 
-#line 895 "src/lex-yacc-parser/scanner.yy.cpp"
+
+  loc.step();
+
+
+#line 902 "src/lex-yacc-parser/scanner.yy.cpp"
 
 	if ( !(yy_init) )
 		{
@@ -1003,350 +1010,350 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 36 "src/lex-yacc-parser/scanner.l"
+#line 45 "src/lex-yacc-parser/scanner.l"
 {BEGIN(IN_COMMENT);}
 	YY_BREAK
 
 
 case 2:
 YY_RULE_SETUP
-#line 39 "src/lex-yacc-parser/scanner.l"
+#line 48 "src/lex-yacc-parser/scanner.l"
 { ++comment_nesting; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 40 "src/lex-yacc-parser/scanner.l"
+#line 49 "src/lex-yacc-parser/scanner.l"
 { if (comment_nesting) --comment_nesting;
                    else BEGIN(INITIAL); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 42 "src/lex-yacc-parser/scanner.l"
+#line 51 "src/lex-yacc-parser/scanner.l"
 ;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 43 "src/lex-yacc-parser/scanner.l"
+#line 52 "src/lex-yacc-parser/scanner.l"
 ; /**/
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 44 "src/lex-yacc-parser/scanner.l"
+#line 53 "src/lex-yacc-parser/scanner.l"
 ;
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 45 "src/lex-yacc-parser/scanner.l"
+#line 54 "src/lex-yacc-parser/scanner.l"
 ;
 	YY_BREAK
 
 case 8:
 YY_RULE_SETUP
-#line 48 "src/lex-yacc-parser/scanner.l"
-{ }
+#line 57 "src/lex-yacc-parser/scanner.l"
+{ loc.step(); }
 	YY_BREAK
 case 9:
 /* rule 9 can match eol */
 YY_RULE_SETUP
-#line 49 "src/lex-yacc-parser/scanner.l"
-{ }
+#line 58 "src/lex-yacc-parser/scanner.l"
+{ loc.lines(yyleng); loc.step(); }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 51 "src/lex-yacc-parser/scanner.l"
+#line 60 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |+|\n");}
-              return yy::parser::make_PLUS();     }
+              return yy::parser::make_PLUS(loc);     }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 53 "src/lex-yacc-parser/scanner.l"
+#line 62 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |-|\n");}
-              return yy::parser::make_MINUS();    }
+              return yy::parser::make_MINUS(loc);    }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 55 "src/lex-yacc-parser/scanner.l"
+#line 64 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |/|\n");}
-              return yy::parser::make_DIVIDE();   }
+              return yy::parser::make_DIVIDE(loc);   }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 57 "src/lex-yacc-parser/scanner.l"
+#line 66 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |*|\n");}
-              return yy::parser::make_MULTIPLY(); }
+              return yy::parser::make_MULTIPLY(loc); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 59 "src/lex-yacc-parser/scanner.l"
+#line 68 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |if|\n");}
-              return yy::parser::make_IF();       }
+              return yy::parser::make_IF(loc);       }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 61 "src/lex-yacc-parser/scanner.l"
+#line 70 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |then|\n");}
-              return yy::parser::make_THEN();     }
+              return yy::parser::make_THEN(loc);     }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 63 "src/lex-yacc-parser/scanner.l"
+#line 72 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |else|\n");}
-              return yy::parser::make_ELSE();     }
+              return yy::parser::make_ELSE(loc);     }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 65 "src/lex-yacc-parser/scanner.l"
+#line 74 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |<=|\n");}
-              return yy::parser::make_LEQUAL();   }
+              return yy::parser::make_LEQUAL(loc);   }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 67 "src/lex-yacc-parser/scanner.l"
+#line 76 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |>=|\n");}
-              return yy::parser::make_GEQUAL();   }
+              return yy::parser::make_GEQUAL(loc);   }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 69 "src/lex-yacc-parser/scanner.l"
+#line 78 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |let|\n");}
-              return yy::parser::make_LET();      }
+              return yy::parser::make_LET(loc);      }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 71 "src/lex-yacc-parser/scanner.l"
+#line 80 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |fun|\n");}
-              return yy::parser::make_FUN();      }
+              return yy::parser::make_FUN(loc);      }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 73 "src/lex-yacc-parser/scanner.l"
+#line 82 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |fix|\n");}
-              return yy::parser::make_FIX();      }
+              return yy::parser::make_FIX(loc);      }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 75 "src/lex-yacc-parser/scanner.l"
+#line 84 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |=|\n");}
-              return yy::parser::make_EQUALS();   }
+              return yy::parser::make_EQUALS(loc);   }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 77 "src/lex-yacc-parser/scanner.l"
+#line 86 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |in|\n");}
-              return yy::parser::make_IN();       }
+              return yy::parser::make_IN(loc);       }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 79 "src/lex-yacc-parser/scanner.l"
+#line 88 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |->|\n");}
-              return yy::parser::make_RARROW();   }
+              return yy::parser::make_RARROW(loc);   }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 81 "src/lex-yacc-parser/scanner.l"
+#line 90 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: ||->|\n");}
-              return yy::parser::make_FARROW();   }
+              return yy::parser::make_FARROW(loc);   }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 83 "src/lex-yacc-parser/scanner.l"
+#line 92 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |(|\n");}
-              return yy::parser::make_LPAREN();   }
+              return yy::parser::make_LPAREN(loc);   }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 85 "src/lex-yacc-parser/scanner.l"
+#line 94 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |)|\n");}
-              return yy::parser::make_RPAREN();   }
+              return yy::parser::make_RPAREN(loc);   }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 87 "src/lex-yacc-parser/scanner.l"
+#line 96 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |<|\n");}
-              return yy::parser::make_SMALLER();   }
+              return yy::parser::make_SMALLER(loc);   }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 89 "src/lex-yacc-parser/scanner.l"
+#line 98 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |>|\n");}
-              return yy::parser::make_BIGGER();   }
+              return yy::parser::make_BIGGER(loc);   }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 91 "src/lex-yacc-parser/scanner.l"
+#line 100 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |:|\n");}
-              return yy::parser::make_COLON();   }
+              return yy::parser::make_COLON(loc);   }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 93 "src/lex-yacc-parser/scanner.l"
+#line 102 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |()|\n");}
-              return yy::parser::make_UNIT();   }
+              return yy::parser::make_UNIT(loc);   }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 95 "src/lex-yacc-parser/scanner.l"
+#line 104 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |int|\n");}
-              return yy::parser::make_INTTYPE();   }
+              return yy::parser::make_INTTYPE(loc);   }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 97 "src/lex-yacc-parser/scanner.l"
+#line 106 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |bool|\n");}
-              return yy::parser::make_BOOLTYPE();   }
+              return yy::parser::make_BOOLTYPE(loc);   }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 99 "src/lex-yacc-parser/scanner.l"
+#line 108 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |unit|\n");}
-              return yy::parser::make_UNITTYPE();   }
+              return yy::parser::make_UNITTYPE(loc);   }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 101 "src/lex-yacc-parser/scanner.l"
+#line 110 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |fst|\n");}
-              return yy::parser::make_FIRST();   }
+              return yy::parser::make_FIRST(loc);   }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 103 "src/lex-yacc-parser/scanner.l"
+#line 112 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |snd|\n");}
-              return yy::parser::make_SECOND();   }
+              return yy::parser::make_SECOND(loc);   }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 105 "src/lex-yacc-parser/scanner.l"
+#line 114 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: | . |\n");}
-              return yy::parser::make_DOT();   }
+              return yy::parser::make_DOT(loc);   }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 107 "src/lex-yacc-parser/scanner.l"
+#line 116 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |;|\n");}
-              return yy::parser::make_SEMICOLON();   }
+              return yy::parser::make_SEMICOLON(loc);   }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 109 "src/lex-yacc-parser/scanner.l"
+#line 118 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |#|\n");}
-              return yy::parser::make_POUNDO();   }
+              return yy::parser::make_POUNDO(loc);   }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 111 "src/lex-yacc-parser/scanner.l"
+#line 120 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |:=|\n");}
-              return yy::parser::make_SETTER();   }
+              return yy::parser::make_SETTER(loc);   }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 113 "src/lex-yacc-parser/scanner.l"
+#line 122 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |ref|\n");}
-              return yy::parser::make_REF();   }
+              return yy::parser::make_REF(loc);   }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 115 "src/lex-yacc-parser/scanner.l"
+#line 124 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |while|\n");}
-              return yy::parser::make_WHILE();   }
+              return yy::parser::make_WHILE(loc);   }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 117 "src/lex-yacc-parser/scanner.l"
+#line 126 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |do|\n");}
-              return yy::parser::make_DO();   }
+              return yy::parser::make_DO(loc);   }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 119 "src/lex-yacc-parser/scanner.l"
+#line 128 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |end|\n");}
-              return yy::parser::make_ENDL();   }
+              return yy::parser::make_ENDL(loc);   }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 121 "src/lex-yacc-parser/scanner.l"
+#line 130 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |array|\n");}
-              return yy::parser::make_ARRAY();   }
+              return yy::parser::make_ARRAY(loc);   }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 123 "src/lex-yacc-parser/scanner.l"
+#line 132 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |new|\n");}
-              return yy::parser::make_NEW();   }
+              return yy::parser::make_NEW(loc);   }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 125 "src/lex-yacc-parser/scanner.l"
+#line 134 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |[|\n");}
-              return yy::parser::make_LBRACK();   }
+              return yy::parser::make_LBRACK(loc);   }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 127 "src/lex-yacc-parser/scanner.l"
+#line 136 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |]|\n");}
-              return yy::parser::make_RBRACK();   }
+              return yy::parser::make_RBRACK(loc);   }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 129 "src/lex-yacc-parser/scanner.l"
+#line 138 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |{|\n");}
-              return yy::parser::make_CLBRACK();   }
+              return yy::parser::make_CLBRACK(loc);   }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 131 "src/lex-yacc-parser/scanner.l"
+#line 140 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |}|\n");}
-              return yy::parser::make_CRBRACK();   }
+              return yy::parser::make_CRBRACK(loc);   }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 133 "src/lex-yacc-parser/scanner.l"
+#line 142 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |{}|\n");}
-              return yy::parser::make_NIL();   }
+              return yy::parser::make_NIL(loc);   }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 135 "src/lex-yacc-parser/scanner.l"
+#line 144 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |::|\n");}
-              return yy::parser::make_CONS();   }
+              return yy::parser::make_CONS(loc);   }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 137 "src/lex-yacc-parser/scanner.l"
+#line 146 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |car|\n");}
-              return yy::parser::make_CAR();   }
+              return yy::parser::make_CAR(loc);   }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 139 "src/lex-yacc-parser/scanner.l"
+#line 148 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |cdr|\n");}
-              return yy::parser::make_CDR();   }
+              return yy::parser::make_CDR(loc);   }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 141 "src/lex-yacc-parser/scanner.l"
+#line 150 "src/lex-yacc-parser/scanner.l"
 { if(DEBUG_MODE) {printf("token: |empty?|\n");}
-              return yy::parser::make_EMPTY();   }
+              return yy::parser::make_EMPTY(loc);   }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 145 "src/lex-yacc-parser/scanner.l"
+#line 154 "src/lex-yacc-parser/scanner.l"
 {
   const char *yycopy = strdup(yytext);
   if(DEBUG_MODE) {printf("token: %s\n", yycopy);}
-  return yy::parser::make_VAR(yycopy);
+  return yy::parser::make_VAR(yycopy, loc);
 }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(IN_COMMENT):
-#line 151 "src/lex-yacc-parser/scanner.l"
+#line 160 "src/lex-yacc-parser/scanner.l"
 {
-  return yy::parser::make_END();
+  return yy::parser::make_END(loc);
 }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 155 "src/lex-yacc-parser/scanner.l"
+#line 164 "src/lex-yacc-parser/scanner.l"
 {
   bool b = false;
   if(strcmp(yytext, "#t") == 0) {
@@ -1354,36 +1361,36 @@ YY_RULE_SETUP
   } else if(strcmp(yytext, "#f") == 0) {
     b = false;
   } else {
-    driver.error("invalid character in bool");
+    driver.error(loc, "invalid character in bool");
   }
   if(DEBUG_MODE) {printf("token: %d\n", b);}
-  return yy::parser::make_BOOL(b);
+  return yy::parser::make_BOOL(b, loc);
 }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 168 "src/lex-yacc-parser/scanner.l"
+#line 177 "src/lex-yacc-parser/scanner.l"
 {
     errno = 0;
     long n = strtol (yytext, NULL, 10);
     if (! (INT_MIN <= n && n <= INT_MAX && errno != ERANGE)) {
-        driver.error ("integer is out of range");
+        driver.error (loc, "integer is out of range");
     }
     if(DEBUG_MODE) {printf("token: %ld\n", n);}
-    return yy::parser::make_INT(n);
+    return yy::parser::make_INT(n, loc);
 }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 177 "src/lex-yacc-parser/scanner.l"
-fprintf(stderr, "bad input character '%s' at line %d\n", yytext, yylineno);
+#line 186 "src/lex-yacc-parser/scanner.l"
+{ driver.error(loc, "invalid character"); }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 179 "src/lex-yacc-parser/scanner.l"
+#line 188 "src/lex-yacc-parser/scanner.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1387 "src/lex-yacc-parser/scanner.yy.cpp"
+#line 1394 "src/lex-yacc-parser/scanner.yy.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2473,7 +2480,7 @@ void yyfree (void * ptr )
 
 /* %ok-for-header */
 
-#line 179 "src/lex-yacc-parser/scanner.l"
+#line 188 "src/lex-yacc-parser/scanner.l"
 
 
 
@@ -2482,7 +2489,7 @@ void parser_driver::scan_begin () {
     if (file.empty () || file == "-") {
         yyin = stdin;
     } else if (!(yyin = fopen (file.c_str (), "r"))) {
-        error ("cannot open " + file + ": " + strerror(errno));
+        error (loc, "cannot open " + file + ": " + strerror(errno));
         exit (EXIT_FAILURE);
     }
 }

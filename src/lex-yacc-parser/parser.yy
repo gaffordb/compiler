@@ -23,6 +23,12 @@ using namespace std;
 // The parsing context
 %param { parser_driver &driver }
 
+%locations
+%initial-action
+{
+  //empty
+};
+
 %define parse.trace
 %define parse.error verbose
 
@@ -169,4 +175,4 @@ typ:
 %%
 
 // NOTE: Bison's error reporting simply forwards to the driver
-void yy::parser::error(const std::string &m) { driver.error(m); }
+void yy::parser::error(const yy::parser::location_type& l, const std::string &m) { driver.error(l, m); }
