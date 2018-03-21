@@ -1,1 +1,2 @@
-(f f)
+(let x = (fix f n -> (if (> 2 0) then 1 else 3)) in
+x)

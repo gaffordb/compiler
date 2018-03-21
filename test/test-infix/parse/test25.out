@@ -1,2 +1,2 @@
 (let x = (5 . 2) in
-(fst x))
+(snd x))
