@@ -71,3 +71,9 @@ Available flags:
 * Added static typing system.
 * Added unit and pair type.
 * Added fst and snd function.
+
+### v0.0.6 (3/20/2018)
+* Added multiline comments (nested comments allowed)
+* Added state and relevant types and expressions
+  * References, dereference operator, while loops, statement sequencing
+* Added basic REPL infrastructure -- TODO: actually compile and display user input
