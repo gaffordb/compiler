@@ -69,6 +69,7 @@ using namespace std;
   REF         "ref"
   WHILE       "while"
   DO          "do"
+  ENDL        "end"
 ;
 
 %token <int> INT "vint"
@@ -115,8 +116,8 @@ exp:
                                      $$->ctx.insert({$3, $5});          }
 | "fix" "var" "(" "var" ":" typ ")" ":" typ "|->" exp1
                                    { $$ = make_shared<EFix>($2, make_shared<EVar>($4), $11, $6, $9);
-                                     $$->ctx.insert({$2, $9});
-                                     $$->ctx.insert({$4, $6});          }
+                                     $$->ctx.insert({$2, make_shared<TFun>($6, $9)});            //ctx for f
+                                     $$->ctx.insert({$4, $6});          } //ctx for var
 | "(" exp1 " . " exp1 ")"          { $$ = make_shared<EPair>($2, $4);   }
 |  "(" exp1 ")"                    { std::swap ($$, $2);                }
 |  exp1 "*" exp1                   { $$ = make_shared<EMult>($1, $3);   }
@@ -124,7 +125,7 @@ exp:
 |  exp1 "-" exp1                   { $$ = make_shared<EMinus>($1, $3);  }
 |  exp1 "+" exp1                   { $$ = make_shared<EPlus>($1, $3);   }
 |  "if" exp1 "then" exp1 "else" exp1  { $$ = make_shared<EIf>($2, $4, $6); }
-|  "while" exp1 "do" exp1          { $$ = make_shared<EWhile>($2, $4);  }
+|  "while" exp1 "do" exp1 "end"    { $$ = make_shared<EWhile>($2, $4);  }
 |  exp1 "<=" exp1                  { $$ = make_shared<ELeq>($1, $3);    }
 |  exp1 ">" exp1                   { $$ = make_shared<EBigger>($1, $3); }
 |  "ref" exp1                      { $$ = make_shared<ERef>($2);        }

@@ -114,6 +114,8 @@ blank [ \t]
               return yy::parser::make_WHILE();   }
 "do"        { if(DEBUG_MODE) {printf("token: |do|\n");}
               return yy::parser::make_DO();   }
+"end"       { if(DEBUG_MODE) {printf("token: |end|\n");}
+              return yy::parser::make_ENDL();   }
 
 [a-zA-Z][a-zA-Z0-9]* {
   const char *yycopy = strdup(yytext);

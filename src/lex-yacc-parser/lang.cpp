@@ -389,7 +389,7 @@ shared_ptr<string> EFun::display(void) {
 shared_ptr<string> EFix::display(void) {
   shared_ptr<string> ret = make_shared<string>();
   string name(this->fun_name);
-  *ret = name;//"(fix " + name + " " + *this->e1->display() + " -> " + *this->e2->display() + ")";
+  *ret = "(fix " + name + " " + *this->e1->display() + " -> " + *this->e2->display() + ")";
   return ret;
 }
 
@@ -455,7 +455,7 @@ shared_ptr<string> EPtr::display(void) {
 
 shared_ptr<string> EWhile::display(void) {
   shared_ptr<string> ret = make_shared<string>();
-  *ret = "(while " + *this->guard->display() + " do\n" + *this->body->display() + ")";
+  *ret = "(while " + *this->guard->display() + " do\n" + *this->body->display() + "\nend)";
   return ret;
 }
 
@@ -724,14 +724,14 @@ shared_ptr<Typ> EVar::typecheck() {
   //cout << "\n\n\n";
   //cout << this->ctx.count(var) << endl;m
   auto ret = this->ctx[var];
-
   // For potential future debugging
-  /*
-  for(auto const &kv : this->ctx)
-  cout << kv.first << " == " << var <<  " " << (kv.first == var) << endl;
-  */
+  //printf("typecheckin var\n");
+  //for(auto const &kv : this->ctx)
+  //cout << kv.first << " == " << var <<  " " << (kv.first == var) << endl;
+
   if(ret == nullptr) {
     fprintf(stderr, "Error: Unmapped variable: %s\n", this->var);
+    raise(SIGINT);
     exit(EXIT_FAILURE);
   }
   return ret;
@@ -862,12 +862,16 @@ shared_ptr<Exp> EFix::apply(LitData val, const char* var) {
 }
 
 shared_ptr<Typ> EFix::typecheck() {
-
+  //printf("TC-EFIX\n");
   auto tin = this->tin;
   auto tout = this->tout;
+  //printf("EFix context to be pushed down: ");
+  //for(auto const &kv : this->ctx)
+  //cout << "Key: " << kv.first << ", Value: " << kv.second->display() << endl;
+
   this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
-  check( this->e2->typecheck(), tin);
+  check(this->e2->typecheck(), tout); //NOTECHANGEchanged tin to tout
   return make_shared<TFun>(tin, tout);
 }
 
@@ -877,6 +881,7 @@ EApp::EApp(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
 
 LitData EApp::eval() {
   typecheck();
+  //printf("EAPP typecheck successful\n");
   LitData e1d = e1->eval();
   LitData e2d = e2->eval();
   //cout << "Application: " << *this->display() << endl;
@@ -917,6 +922,7 @@ shared_ptr<Typ> EApp::typecheck() {
   TFun* tfun;
   shared_ptr<Typ> tin, tout;
   this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  //cout << "Expression to be typechecked: " << *this->e1->display() << endl;
   shared_ptr<Typ> t1 = this->e1->typecheck();
   //cout << "This should be a function: " << t1->display() << endl;
   if((tfun = dynamic_cast<TFun*>(t1.get())) != nullptr) {
