@@ -44,6 +44,7 @@ using namespace std;
   THEN        "then"
   ELSE        "else"
   LEQUAL      "<="
+  GEQUAL      ">="
   LET         "let"
   FUN         "fun"
   FIX         "fix"
@@ -77,10 +78,10 @@ using namespace std;
 %token <const char*> VAR "var"
 
 %right ";"
-%left ">" "<="
+%left ":="
+%left ">" "<" "<=" ">="
 %left "+" "-"
 %left "*" "/"
-%left ":="
 %left "#"
 
 %type  < shared_ptr<Exp> > exp
@@ -128,6 +129,8 @@ exp:
 |  "while" exp1 "do" exp1 "end"    { $$ = make_shared<EWhile>($2, $4);  }
 |  exp1 "<=" exp1                  { $$ = make_shared<ELeq>($1, $3);    }
 |  exp1 ">" exp1                   { $$ = make_shared<EBigger>($1, $3); }
+|  exp1 ">=" exp1                  { $$ = make_shared<EGeq>($1, $3);    }
+|  exp1 "<" exp1                   { $$ = make_shared<ESmaller>($1, $3);}
 |  "ref" exp1                      { $$ = make_shared<ERef>($2);        }
 |  exp1 ":=" exp1                  { $$ = make_shared<ESet>($1, $3);    }
 |  "#" exp1                        { $$ = make_shared<EDeref>($2);      }

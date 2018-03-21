@@ -12,13 +12,28 @@
 #include <unistd.h>
 #include <vector>
 #include <sstream>
+#include "parser_driver.h"
+#include <ctype.h>
+#include <unistd.h>
+#include <stdbool.h>
 
 using namespace std;
 
-void interpret(string s) {
-  const char* arg = s.c_str();
+string interpret(string s) {
+  string ret;
 
-  execlp("compiler", arg);
+  ofstream myfile;
+  //set up tmp file
+  myfile.open (".tmp_to_read_187.txt");
+  myfile << s;
+  myfile.close();
+  stringstream sstrm;
+  parser_driver driver (".tmp_to_read_187.txt");
+  shared_ptr<Exp> expr = driver.parse(0);
+  sstrm << expr->eval();
+  remove(".tmp_to_read_187.txt");
+  
+  return sstrm.str();
 }
 
 void curses_init() {
@@ -71,6 +86,8 @@ int main(void) {
           continue;
         }
         curline = all_lines.at(line_num);
+        strm.flush();
+        strm << curline;
         printw("%s", curline.c_str());
         move(y, (x += curline.length()));
         line_length = curline.length();
@@ -93,20 +110,26 @@ int main(void) {
         move(y, x);
       } else if(c == 27) { //esc key
         quit();
-      } else if(c == '\n') {
+      } else if(c == '\n' || c == 13) {
         curline = strm.str();
 
         all_lines.push_back(curline);
         last_line++;
         line_num++;
 
-        interpret(curline);
+        string result = interpret(curline);
+        move(++y, (x = 0));
+        printw(result.c_str());
         move(++y, (x = 0));
         break; //exit to outer loop and interpret
       } else if(c == KEY_BACKSPACE || c == KEY_DC || c == 127) {
         x = x - 1 >= 2 ? x-1 : 2;
         move(y, x);
         delch();
+        auto old_pos = strm.tellg();
+        strm.seekp(x - 2);
+        strm.get();
+        strm.seekg(old_pos); //could do strm.end if this doesn't work
         line_length = line_length - 1 > 0 ? line_length - 1 : 0;
       } else if(c <= 126 && c >= 32){
         addch(c);

@@ -63,14 +63,8 @@ int main(int argc, char **argv) {
         abort();
       }
     }
-    //g_stack_next_alloc = 0; //maybe not necessary
     parser_driver driver (argv[optind]);
     shared_ptr<Exp> expr = driver.parse(blex);
-    //sleep(1);
-    //printf("whatisgoinon");
-    //std::cout << expr << std::endl;m
-    //exit(1);
-    //auto prog = driver.parse(0);
     if(bparse){
       std::cout << expr << std::endl;
       return 0;
@@ -79,24 +73,3 @@ int main(int argc, char **argv) {
     return 0;
   }
 }
-/*
-ifstream infile;
-infile.open(argv[optind]);
-if(infile.is_open()){
-shared_ptr<vector<Token> > toklist_ptr = Token::lex(infile);
-if(blex && !bparse) {
-cout << string_of_token_list(toklist_ptr) << endl;
-return 0;
-} else if(bparse) {
-//cout << string_of_exp_list(explist_ptr) << endl;
-}
-Parser p(toklist_ptr);
-shared_ptr<Exp> e(p.parse());
-cout << e->interpret() << endl;
-infile.close();
-} else {
-print_error("Error. File not found.");
-}
-return 0;
-}
-*/

@@ -64,6 +64,8 @@ blank [ \t]
               return yy::parser::make_ELSE();     }
 "<="        { if(DEBUG_MODE) {printf("token: |<=|\n");}
               return yy::parser::make_LEQUAL();   }
+">="        { if(DEBUG_MODE) {printf("token: |>=|\n");}
+              return yy::parser::make_GEQUAL();   }
 "let"       { if(DEBUG_MODE) {printf("token: |let|\n");}
               return yy::parser::make_LET();      }
 "fun"       { if(DEBUG_MODE) {printf("token: |fun|\n");}

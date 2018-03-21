@@ -1,0 +1,1 @@
+g++ -std=c++14 -O3 -Wall -Wno-deprecated-register -Wno-duplicate-decl-specifier interpreter.cpp lang.cpp parser_driver.cpp scanner.yy.cpp parser.yy.cpp

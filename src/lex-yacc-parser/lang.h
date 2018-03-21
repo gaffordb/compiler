@@ -144,10 +144,30 @@ struct ELeq : public Exp {
   shared_ptr<Typ> typecheck();
 };
 
+struct EGeq : public Exp {
+  shared_ptr<Exp> e1;
+  shared_ptr<Exp> e2;
+  EGeq(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
 struct EBigger : public Exp {
   shared_ptr<Exp> e1;
   shared_ptr<Exp> e2;
   EBigger(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct ESmaller : public Exp {
+  shared_ptr<Exp> e1;
+  shared_ptr<Exp> e2;
+  ESmaller(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2);
   LitData eval();
   shared_ptr<string> display(void);
   void subst(LitData val, const char* var);

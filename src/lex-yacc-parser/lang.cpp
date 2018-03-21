@@ -350,9 +350,21 @@ shared_ptr<string> ELeq::display(void) {
   return ret;
 }
 
+shared_ptr<string> EGeq::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(>= " + *this->e1->display() + " " + *this->e2->display() + ")";
+  return ret;
+}
+
 shared_ptr<string> EBigger::display(void) {
   shared_ptr<string> ret = make_shared<string>();
   *ret = "(> " + *this->e1->display() + " " + *this->e2->display() + ")";
+  return ret;
+}
+
+shared_ptr<string> ESmaller::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(< " + *this->e1->display() + " " + *this->e2->display() + ")";
   return ret;
 }
 
@@ -582,7 +594,7 @@ LitData EDiv::eval() {
   }
   LitData ret;
   ret.type = ival;
-  ret.data.i = e1d.data.i * e2d.data.i;
+  ret.data.i = e1d.data.i / e2d.data.i;
   return ret;
 }
 
@@ -629,6 +641,34 @@ shared_ptr<Typ> ELeq::typecheck() {
   return make_shared<TBool>();
 }
 
+/***** EGeq ******************************************************************/
+
+EGeq::EGeq(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
+
+LitData EGeq::eval() {
+  typecheck();
+  LitData e1d = e1->eval();
+  LitData e2d = e2->eval();
+  LitData ret;
+  ret.type = bval;
+  ret.data.b = e1d.data.i >= e2d.data.i;
+  return ret;
+}
+
+void EGeq::subst(LitData val, const char* var) {
+  this->e1->subst(val, var);
+  this->e2->subst(val, var);
+}
+
+shared_ptr<Typ> EGeq::typecheck() {
+  auto expected = make_shared<TInt>();
+  this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  check(this->e1->typecheck(), expected);
+  check(this->e2->typecheck(), expected);
+  return make_shared<TBool>();
+}
+
 /***** EBigger ******************************************************************/
 
 EBigger::EBigger(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
@@ -650,6 +690,35 @@ void EBigger::subst(LitData val, const char* var) {
 }
 
 shared_ptr<Typ> EBigger::typecheck() {
+  auto expected = make_shared<TInt>();
+  this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  check(this->e1->typecheck(), expected);
+  check(this->e2->typecheck(), expected);
+  return make_shared<TBool>();
+}
+
+/***** ESmaller ******************************************************************/
+
+ESmaller::ESmaller(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
+
+LitData ESmaller::eval() {
+  typecheck();
+  LitData e1d = e1->eval();
+  LitData e2d = e2->eval();
+
+  LitData ret;
+  ret.type = bval;
+  ret.data.b = e1d.data.i < e2d.data.i;
+  return ret;
+}
+
+void ESmaller::subst(LitData val, const char* var) {
+  this->e1->subst(val, var);
+  this->e2->subst(val, var);
+}
+
+shared_ptr<Typ> ESmaller::typecheck() {
   auto expected = make_shared<TInt>();
   this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
