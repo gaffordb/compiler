@@ -350,18 +350,26 @@ namespace yy {
         TOK_FARROW = 272,
         TOK_LPAREN = 273,
         TOK_RPAREN = 274,
-        TOK_BIGGER = 275,
-        TOK_COLON = 276,
-        TOK_UNIT = 277,
-        TOK_INTTYPE = 278,
-        TOK_BOOLTYPE = 279,
-        TOK_UNITTYPE = 280,
-        TOK_FIRST = 281,
-        TOK_SECOND = 282,
-        TOK_DOT = 283,
-        TOK_INT = 284,
-        TOK_BOOL = 285,
-        TOK_VAR = 286
+        TOK_SMALLER = 275,
+        TOK_BIGGER = 276,
+        TOK_COLON = 277,
+        TOK_UNIT = 278,
+        TOK_INTTYPE = 279,
+        TOK_BOOLTYPE = 280,
+        TOK_UNITTYPE = 281,
+        TOK_FIRST = 282,
+        TOK_SECOND = 283,
+        TOK_DOT = 284,
+        TOK_SEMICOLON = 285,
+        TOK_POUNDO = 286,
+        TOK_SETTER = 287,
+        TOK_REF = 288,
+        TOK_WHILE = 289,
+        TOK_DO = 290,
+        TOK_ENDL = 291,
+        TOK_INT = 292,
+        TOK_BOOL = 293,
+        TOK_VAR = 294
       };
     };
 
@@ -546,6 +554,10 @@ namespace yy {
 
     static inline
     symbol_type
+    make_SMALLER ();
+
+    static inline
+    symbol_type
     make_BIGGER ();
 
     static inline
@@ -579,6 +591,34 @@ namespace yy {
     static inline
     symbol_type
     make_DOT ();
+
+    static inline
+    symbol_type
+    make_SEMICOLON ();
+
+    static inline
+    symbol_type
+    make_POUNDO ();
+
+    static inline
+    symbol_type
+    make_SETTER ();
+
+    static inline
+    symbol_type
+    make_REF ();
+
+    static inline
+    symbol_type
+    make_WHILE ();
+
+    static inline
+    symbol_type
+    make_DO ();
+
+    static inline
+    symbol_type
+    make_ENDL ();
 
     static inline
     symbol_type
@@ -674,7 +714,7 @@ namespace yy {
   // YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
   // positive, shift that token.  If negative, reduce the rule whose
   // number is the opposite.  If YYTABLE_NINF, syntax error.
-  static const signed char yytable_[];
+  static const unsigned char yytable_[];
 
   static const signed char yycheck_[];
 
@@ -796,12 +836,12 @@ namespace yy {
     enum
     {
       yyeof_ = 0,
-      yylast_ = 339,     ///< Last index in yytable_.
+      yylast_ = 650,     ///< Last index in yytable_.
       yynnts_ = 5,  ///< Number of nonterminal symbols.
-      yyfinal_ = 24, ///< Termination state number.
+      yyfinal_ = 30, ///< Termination state number.
       yyterror_ = 1,
       yyerrcode_ = 256,
-      yyntokens_ = 32  ///< Number of tokens.
+      yyntokens_ = 40  ///< Number of tokens.
     };
 
 
@@ -847,9 +887,10 @@ namespace yy {
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    29,    30,    31
+      25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
+      35,    36,    37,    38,    39
     };
-    const unsigned int user_token_number_max_ = 286;
+    const unsigned int user_token_number_max_ = 294;
     const token_number_type undef_token_ = 2;
 
     if (static_cast<int>(t) <= yyeof_)
@@ -880,24 +921,24 @@ namespace yy {
   {
       switch (other.type_get ())
     {
-      case 34: // exp1
-      case 35: // exp
+      case 42: // exp1
+      case 43: // exp
         value.copy<  shared_ptr<Exp>  > (other.value);
         break;
 
-      case 36: // typ
+      case 44: // typ
         value.copy<  shared_ptr<Typ>  > (other.value);
         break;
 
-      case 30: // "vbool"
+      case 38: // "vbool"
         value.copy< bool > (other.value);
         break;
 
-      case 31: // "var"
+      case 39: // "var"
         value.copy< const char* > (other.value);
         break;
 
-      case 29: // "vint"
+      case 37: // "vint"
         value.copy< int > (other.value);
         break;
 
@@ -917,24 +958,24 @@ namespace yy {
     (void) v;
       switch (this->type_get ())
     {
-      case 34: // exp1
-      case 35: // exp
+      case 42: // exp1
+      case 43: // exp
         value.copy<  shared_ptr<Exp>  > (v);
         break;
 
-      case 36: // typ
+      case 44: // typ
         value.copy<  shared_ptr<Typ>  > (v);
         break;
 
-      case 30: // "vbool"
+      case 38: // "vbool"
         value.copy< bool > (v);
         break;
 
-      case 31: // "var"
+      case 39: // "var"
         value.copy< const char* > (v);
         break;
 
-      case 29: // "vint"
+      case 37: // "vint"
         value.copy< int > (v);
         break;
 
@@ -1008,24 +1049,24 @@ namespace yy {
     // Type destructor.
     switch (yytype)
     {
-      case 34: // exp1
-      case 35: // exp
+      case 42: // exp1
+      case 43: // exp
         value.template destroy<  shared_ptr<Exp>  > ();
         break;
 
-      case 36: // typ
+      case 44: // typ
         value.template destroy<  shared_ptr<Typ>  > ();
         break;
 
-      case 30: // "vbool"
+      case 38: // "vbool"
         value.template destroy< bool > ();
         break;
 
-      case 31: // "var"
+      case 39: // "var"
         value.template destroy< const char* > ();
         break;
 
-      case 29: // "vint"
+      case 37: // "vint"
         value.template destroy< int > ();
         break;
 
@@ -1052,24 +1093,24 @@ namespace yy {
     super_type::move(s);
       switch (this->type_get ())
     {
-      case 34: // exp1
-      case 35: // exp
+      case 42: // exp1
+      case 43: // exp
         value.move<  shared_ptr<Exp>  > (s.value);
         break;
 
-      case 36: // typ
+      case 44: // typ
         value.move<  shared_ptr<Typ>  > (s.value);
         break;
 
-      case 30: // "vbool"
+      case 38: // "vbool"
         value.move< bool > (s.value);
         break;
 
-      case 31: // "var"
+      case 39: // "var"
         value.move< const char* > (s.value);
         break;
 
-      case 29: // "vint"
+      case 37: // "vint"
         value.move< int > (s.value);
         break;
 
@@ -1130,7 +1171,7 @@ namespace yy {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286
+     285,   286,   287,   288,   289,   290,   291,   292,   293,   294
     };
     return static_cast<token_type> (yytoken_number_[type]);
   }
@@ -1244,6 +1285,12 @@ namespace yy {
   }
 
   parser::symbol_type
+  parser::make_SMALLER ()
+  {
+    return symbol_type (token::TOK_SMALLER);
+  }
+
+  parser::symbol_type
   parser::make_BIGGER ()
   {
     return symbol_type (token::TOK_BIGGER);
@@ -1298,6 +1345,48 @@ namespace yy {
   }
 
   parser::symbol_type
+  parser::make_SEMICOLON ()
+  {
+    return symbol_type (token::TOK_SEMICOLON);
+  }
+
+  parser::symbol_type
+  parser::make_POUNDO ()
+  {
+    return symbol_type (token::TOK_POUNDO);
+  }
+
+  parser::symbol_type
+  parser::make_SETTER ()
+  {
+    return symbol_type (token::TOK_SETTER);
+  }
+
+  parser::symbol_type
+  parser::make_REF ()
+  {
+    return symbol_type (token::TOK_REF);
+  }
+
+  parser::symbol_type
+  parser::make_WHILE ()
+  {
+    return symbol_type (token::TOK_WHILE);
+  }
+
+  parser::symbol_type
+  parser::make_DO ()
+  {
+    return symbol_type (token::TOK_DO);
+  }
+
+  parser::symbol_type
+  parser::make_ENDL ()
+  {
+    return symbol_type (token::TOK_ENDL);
+  }
+
+  parser::symbol_type
   parser::make_INT (const int& v)
   {
     return symbol_type (token::TOK_INT, v);
@@ -1318,7 +1407,7 @@ namespace yy {
 
 
 } // yy
-#line 1322 "src/lex-yacc-parser/parser.yy.hpp" // lalr1.cc:392
+#line 1411 "src/lex-yacc-parser/parser.yy.hpp" // lalr1.cc:392
 
 
 

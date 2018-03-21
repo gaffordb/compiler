@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
         abort();
       }
     }
+    //g_stack_next_alloc = 0; //maybe not necessary
     parser_driver driver (argv[optind]);
     shared_ptr<Exp> expr = driver.parse(blex);
     //sleep(1);

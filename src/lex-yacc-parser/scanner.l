@@ -12,16 +12,39 @@
 // 2.5.31 through 2.5.33): it generates code that does
 // not conform to C89.  See Debian bug 333231
 // <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=333231>.
+
+//CREDIT TO:
+//https://stackoverflow.com/questions/34493467/how-to-handle-nested-comment-in-flex
+//for approach to multiline comments
+
 # undef yywrap
 # define yywrap() 1
 %}
 
 %option noyywrap nounput batch debug noinput nodefault
 
+
 int   [-]*[0-9]+
 bool  (#)(t|f)
 blank [ \t]
+%x IN_COMMENT
+
 %%
+  int comment_nesting = 0;
+
+<INITIAL>{
+"/*"      {BEGIN(IN_COMMENT);}
+}
+<IN_COMMENT>{
+  "/*"           { ++comment_nesting; }
+  "*"+"/"        { if (comment_nesting) --comment_nesting;
+                   else BEGIN(INITIAL); }
+  "*"+           ;
+  [^/*\n]+       ; /**/
+  [/]            ;
+  \n             ;
+}
+
 {blank}+    { }
 [\n]+       { }
 
@@ -59,6 +82,8 @@ blank [ \t]
               return yy::parser::make_LPAREN();   }
 ")"         { if(DEBUG_MODE) {printf("token: |)|\n");}
               return yy::parser::make_RPAREN();   }
+"<"         { if(DEBUG_MODE) {printf("token: |<|\n");}
+              return yy::parser::make_SMALLER();   }
 ">"         { if(DEBUG_MODE) {printf("token: |>|\n");}
               return yy::parser::make_BIGGER();   }
 ":"         { if(DEBUG_MODE) {printf("token: |:|\n");}
@@ -67,9 +92,9 @@ blank [ \t]
               return yy::parser::make_UNIT();   }
 "int"       { if(DEBUG_MODE) {printf("token: |int|\n");}
               return yy::parser::make_INTTYPE();   }
-"bool"       { if(DEBUG_MODE) {printf("token: |bool|\n");}
+"bool"      { if(DEBUG_MODE) {printf("token: |bool|\n");}
               return yy::parser::make_BOOLTYPE();   }
-"unit"       { if(DEBUG_MODE) {printf("token: |unit|\n");}
+"unit"      { if(DEBUG_MODE) {printf("token: |unit|\n");}
               return yy::parser::make_UNITTYPE();   }
 "fst"       { if(DEBUG_MODE) {printf("token: |fst|\n");}
               return yy::parser::make_FIRST();   }
@@ -77,6 +102,20 @@ blank [ \t]
               return yy::parser::make_SECOND();   }
 " . "       { if(DEBUG_MODE) {printf("token: | . |\n");}
               return yy::parser::make_DOT();   }
+";"         { if(DEBUG_MODE) {printf("token: |;|\n");}
+              return yy::parser::make_SEMICOLON();   }
+"#"         { if(DEBUG_MODE) {printf("token: |#|\n");}
+              return yy::parser::make_POUNDO();   }
+":="        { if(DEBUG_MODE) {printf("token: |:=|\n");}
+              return yy::parser::make_SETTER();   }
+"ref"       { if(DEBUG_MODE) {printf("token: |ref|\n");}
+              return yy::parser::make_REF();   }
+"while"     { if(DEBUG_MODE) {printf("token: |while|\n");}
+              return yy::parser::make_WHILE();   }
+"do"        { if(DEBUG_MODE) {printf("token: |do|\n");}
+              return yy::parser::make_DO();   }
+"end"       { if(DEBUG_MODE) {printf("token: |end|\n");}
+              return yy::parser::make_ENDL();   }
 
 [a-zA-Z][a-zA-Z0-9]* {
   const char *yycopy = strdup(yytext);

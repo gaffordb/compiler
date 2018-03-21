@@ -6,7 +6,14 @@
 
 using namespace std;
 
-enum TData { ival, bval, strval, funval, fixval, pairval, unitval };
+/*************************Data**************************************/
+
+enum TData {
+  ival, bval,
+  strval, funval,
+  fixval, pairval,
+  unitval, ptrval
+};
 
 union LData {
   int i;
@@ -15,15 +22,15 @@ union LData {
   struct EFun* fun;
   struct EFix* fix;
   struct EPair* pair;
+  struct EPtr* ptr;
 };
 
 struct LitData {
   TData type;
   LData data;
-  //LitData(shared_ptr<Typ> typ, LitData ld);
 };
 
-
+/*************************TYPES**************************************/
 struct Typ {
   //~Typ() = default;
   virtual string display() = 0;
@@ -50,6 +57,7 @@ struct TPair : public Typ {
   TPair(shared_ptr<Typ> _t1, shared_ptr<Typ> _t2);
   string display();
 };
+
 struct TFun : public Typ {
   shared_ptr<Typ> tin;
   shared_ptr<Typ> tout;
@@ -57,6 +65,14 @@ struct TFun : public Typ {
   TFun(shared_ptr<Typ> _tin, shared_ptr<Typ> _tout);
   string display();
 };
+
+struct TRef : public Typ {
+  shared_ptr<Typ> t;
+  TRef(shared_ptr<Typ> _t);
+  string display();
+};
+
+/*************************Expressions**************************************/
 
 struct Exp {
   virtual LitData eval() = 0;
@@ -243,6 +259,73 @@ struct EUnit : public Exp {
   void subst(LitData val, const char* var);
   shared_ptr<Typ> typecheck();
 };
+
+struct ERef : public Exp {
+  shared_ptr<Exp> e;
+  ERef(shared_ptr<Exp> _e);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct EDeref : public Exp {
+  shared_ptr<Exp> e;
+  EDeref(shared_ptr<Exp> _e);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct ESet : public Exp {
+  shared_ptr<Exp> e1, e2;
+  ESet(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct ESeq : public Exp {
+  shared_ptr<Exp> e1, e2;
+  ESeq(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct EPtr : public Exp {
+  unsigned int addr;
+  shared_ptr<Typ> t;
+  shared_ptr<EPtr> self;
+  EPtr(unsigned int addr, shared_ptr<Typ> _t);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct EWhile : public Exp {
+  shared_ptr<Exp> guard, body;
+  EWhile(shared_ptr<Exp> _guard, shared_ptr<Exp> _body);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+/*************************STACK**************************************/
+
+extern unordered_map<unsigned int, shared_ptr<LitData> > g_stack;
+extern unsigned int g_stack_next_alloc;
+
+void set_ptr(unsigned int addr, shared_ptr<LitData> val);
+unsigned int ptr_alloc();
+shared_ptr<LitData> get_ptr(unsigned int addr);
+
+/*************************MISC**************************************/
 
 LitData make_data(shared_ptr<Exp> e);
 
