@@ -7,22 +7,25 @@ More details to come in the future.
 ## Language Syntax
 Language is defined as the following:   
 ```
-e ::= n | b | e1 (+) e2 | if e1 then e2 else e3
+e ::= (e) | n | b | e1 (+) e2 | if e1 then e2 else e3
     | x | let x : t = e1 in e2 | fun (x:t1) : t2 |-> e | fix f (x:t1) : t2 |-> e | e1 e2
-    | (e1 . e2) | fst e | snd e
+    | () | (e1 . e2) | fst e | snd e
+    | ref e | e1 : e2 | #e | e1 ; e2
+    | while e1 do e2 end
 ```
 
 ## Types
 Types defined as the following:
 ```
-t ::= int | bool | unit | t1 -> t2 | t1 * t2
+t ::= int | bool | unit | <t> | t1 -> t2 | t1 * t2
 ```
 
 ## Dependencies
 * `getopt`
 * `g++`
-* `bison`
-* `flex`
+* `bison` version >= 3.0.4
+* `flex`  version >= 2.6.4
+* `ncurses`
 
 ## Build Instructions
 * Clone repository onto your system.
