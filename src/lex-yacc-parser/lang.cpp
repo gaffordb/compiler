@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <signal.h>
+#include <sstream>
 
 using namespace std;
 
@@ -13,6 +14,7 @@ unordered_map<unsigned int, shared_ptr<LitData> > g_stack;
 //for typechecking
 void check(shared_ptr<Typ> actual, shared_ptr<Typ> expected) {
   string t1 = actual->display(), t2 = expected->display();
+  //just compare string values rather than dealing with dynamic_casts
   if(t1 == t2) {
     return;
   } else {
@@ -57,6 +59,8 @@ std::pair<TData, shared_ptr<Exp> > data_to_exp(LitData ld) {
     return pair<TData, shared_ptr<Exp> >(t, ld.data.pair);
   } else if(t == ptrval) {
     return pair<TData, shared_ptr<Exp> >(t, ld.data.ptr);
+  } else if(t == listval) {
+    return pair<TData, shared_ptr<Exp> >(t, ld.data.lst);
   } else {
     cerr << "Unknown type in data_to_exp.\n" << endl;
     exit(EXIT_FAILURE);
@@ -79,8 +83,6 @@ unsigned int ptr_alloc() {
 }
 
 shared_ptr<LitData> get_ptr(unsigned int addr) {
-  //printf("addr: %d, to be allocated: %d\n", addr, g_stack_next_alloc);
-  //raise(SIGINT);
   //ensure ptr has been allocated
   if(addr < g_stack_next_alloc) {
     return g_stack[addr];
@@ -108,10 +110,20 @@ TFun::TFun(shared_ptr<Typ> _tin, shared_ptr<Typ> _tout) : tin(_tin), tout(_tout)
 string TFun::display() {
   return this->tin->display() + "->" + this->tout->display();
 }
+
 TPair::TPair(shared_ptr<Typ> _t1, shared_ptr<Typ> _t2) : t1(_t1), t2(_t2) { }
 string TPair::display() {
   return this->t1->display() + "*" + this->t2->display();
 }
+
+TArray::TArray(shared_ptr<Typ> _t) : t(_t) { }
+string TArray::display() {return "array<" + this->t->display() + ">"; }
+
+TArrGet::TArrGet(shared_ptr<Typ> _t) : t(_t) { }
+string TArrGet::display() {return "<" + this->t->display() + "> || " + this->t->display(); }
+
+TList::TList(shared_ptr<Typ> _t) : t(_t) { }
+string TList::display() {return "{" + this->t->display() + "}"; }
 
 /***** EUnit *******************************************************************/
 EUnit::EUnit() { }
@@ -174,6 +186,10 @@ ELit::ELit(LitData& ld) {
       this->value.data.ptr = ld.data.ptr;
       break;
     }
+    case listval: {
+      this->value.data.lst = ld.data.lst;
+      break;
+    }
   }
 }
 
@@ -208,6 +224,10 @@ std::ostream& operator <<(std::ostream &strm, LitData const& ld) {
       break;
     }
     case ptrval: {
+      strm << *(ld.data.ptr->display());
+      break;
+    }
+    case listval: {
       strm << *(ld.data.ptr->display());
       break;
     }
@@ -253,6 +273,10 @@ std::ostream& operator <<(std::ostream &strm, TData const& ld) {
       strm << "ptr";
       break;
     }
+    case listval: {
+      strm << "list";
+      break;
+    }
     default:
     printf("Given: %d", ld);
     fprintf(stderr, "Invalid LitData type!\n");
@@ -261,12 +285,6 @@ std::ostream& operator <<(std::ostream &strm, TData const& ld) {
   return strm;
 }
 
-/*
-std::ostream& Exp::operator<<(std::ostream& strm) {
-strm << *this->display();
-return strm;
-}
-*/
 std::ostream& operator<<(std::ostream& strm, shared_ptr<Exp> exp) {
   strm << *(exp->display());
   return strm;
@@ -275,7 +293,6 @@ std::ostream& operator<<(std::ostream& strm, shared_ptr<Exp> exp) {
 shared_ptr<string> ELit::display(void) {
   shared_ptr<string> ret = make_shared<string>();
   LitData ld = this->value;
-  //cout << ld << endl;
   switch(ld.type) {
     case ival: {
       *ret = std::to_string(ld.data.i);
@@ -310,6 +327,10 @@ shared_ptr<string> ELit::display(void) {
       *ret = *(ld.data.ptr->display());
       break;
     }
+    case listval: {
+      *ret = *(ld.data.lst->display());
+      break;
+    }
     default:
     fprintf(stderr, "Given: %d\n",ld.type);
     fprintf(stderr, "Invalid LitData type\n");
@@ -318,8 +339,7 @@ shared_ptr<string> ELit::display(void) {
   return ret;
 }
 
-/*to_string stuff for display purposes*/
-/*Gross and inefficient, but this is only for debugging anyways*/
+/***** Expression Display Definitions *****************************************/
 shared_ptr<string> EPlus::display(void) {
   shared_ptr<string> ret = make_shared<string>();
   *ret = "(+ " + *this->e1->display() + " " + *this->e2->display() + ")";
@@ -471,10 +491,106 @@ shared_ptr<string> EWhile::display(void) {
   return ret;
 }
 
+shared_ptr<string> EArrRef::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(new " + this->t->display() + "[" + *this->e->display() + "])";
+  return ret;
+}
+
+shared_ptr<string> EArrGet::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(" + *this->arr->display() + "[" + *this->index->display() + "])";
+  return ret;
+}
+
+shared_ptr<string> EArrSet::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(" + *this->arr->display() + "[" + *this->index->display() + "])";
+  return ret;
+}
+
+shared_ptr<string> EList::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  stringstream sdata;
+  string head;
+  string tail;
+  if(this->data == nullptr) {
+    head = " ";
+  } else {
+    if(this->data->type == listval) {
+      head = this->data->data.lst->display_inner();
+    } else {
+      sdata << *this->data;
+      head = sdata.str();
+    }
+  } if(this->e != nullptr) {
+    EList* elist = dynamic_cast<EList*>(this->e.get());
+    if(elist == nullptr) {
+      printf("Error. Unexpected type as tail of list");
+    }
+    tail = elist->display_inner();
+  } else {
+    tail = " ";
+  }
+  *ret = "{ " + sdata.str() + " " + tail + "} : " + this->t->display();
+  return ret;
+}
+
+string EList::display_inner(void) {
+  string ret;
+  stringstream sdata;
+  string head;
+  string tail;
+  if(this->data == nullptr) {
+    head = " ";
+  } else {
+    if(this->data->type == listval) {
+      head = this->data->data.lst->display_inner();
+    } else {
+      sdata << *this->data;
+      head = sdata.str();
+    }
+  } if(this->e != nullptr) {
+    EList* elist = dynamic_cast<EList*>(this->e.get());
+    if(elist == nullptr) {
+      printf("Error. Unexpected type as tail of list");
+    }
+    tail = elist->display_inner();
+  } else {
+    tail = " ";
+  }
+  ret =  sdata.str() + " " + tail;
+  return ret;
+}
+
+shared_ptr<string> ECons::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(:: " + *this->e1->display() + *this->e2->display() + ")";
+  return ret;
+}
+
+shared_ptr<string> ECar::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(car " + *this->e->display() + ")";
+  return ret;
+}
+
+shared_ptr<string> ECdr::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(cdr " + *this->e->display() + ")";
+  return ret;
+}
+
+shared_ptr<string> EEmpty::display(void) {
+  shared_ptr<string> ret = make_shared<string>();
+  *ret = "(empty? " + *this->e->display() + ")";
+  return ret;
+}
+
 /***** ELit ******************************************************************/
 
 LitData ELit::eval() { return value; }
-void ELit::subst(LitData val, const char* var) {  /*do nothing*/ }
+void ELit::subst(LitData val, const char* var) { }
 
 shared_ptr<Typ> ELit::typecheck() {
   LitData ld = this->value;
@@ -749,17 +865,14 @@ void EIf::subst(LitData val, const char* var) {
 }
 
 shared_ptr<Typ> EIf::typecheck() {
-  //printf("TC-IF\n");
+
   this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   this->e3->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
 
   check(this->e1->typecheck(), make_shared<TBool>()); //check guard
-  //printf("guard cleared\n");
-  //cout << this->e2->typecheck()->display() << endl;
-  //cout << this->e3->typecheck()->display() << endl;
   check(this->e2->typecheck(), this->e3->typecheck());
-  //printf("if cleared\n");
+
   return this->e2->typecheck();
 }
 
@@ -781,7 +894,6 @@ LitData EVar::eval() {
 
 void EVar::subst(LitData val, const char* var) {
   if(strcmp(this->var, var) == 0) {
-    //cout << "Substitution performed! " << var << " is now " << val << endl;
     shared_ptr<Exp> ret = make_shared<ELit>(val);
     this->e1 = ret;
     return;
@@ -790,21 +902,13 @@ void EVar::subst(LitData val, const char* var) {
 
 shared_ptr<Typ> EVar::typecheck() {
   const string var(this->var);
-  //cout << "\n\n\n";
-  //cout << this->ctx.count(var) << endl;m
   auto ret = this->ctx[var];
-  // For potential future debugging
-  //printf("typecheckin var\n");
-  //for(auto const &kv : this->ctx)
-  //cout << kv.first << " == " << var <<  " " << (kv.first == var) << endl;
-
   if(ret == nullptr) {
     fprintf(stderr, "Error: Unmapped variable: %s\n", this->var);
     raise(SIGINT);
     exit(EXIT_FAILURE);
   }
   return ret;
-  //this->e1->typecheck(); Not sure if I need this!!//TODO
 }
 
 /***** ELet ******************************************************************/
@@ -818,13 +922,11 @@ LitData ELet::eval() {
   if(e1d.type == strval) {
     const char* var = e1d.data.str;
     LitData e2d = e2->eval();
-    //cout << "Type of data: " << e2d.type << endl;
-    //cout << "Well, it's a ptr, so I should be able to print this: " << *e2d.data.ptr->display() << endl;
     e3->subst(e2d, var);
     LitData e3d = e3->eval();
     return e3d;
   } else {
-    cerr << "Expected var name, given " << *e1->display() << endl;
+    cerr << "Expected var name in ELet, given " << *e1->display() << endl;
     exit(EXIT_FAILURE);
   }
 }
@@ -840,24 +942,12 @@ void ELet::subst(LitData val, const char* var) {
 }
 
 shared_ptr<Typ> ELet::typecheck() {
-  //printf("TC-LET\n");
   this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   check(this->tv, this->e2->typecheck());
 
   this->e3->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   return this->e3->typecheck();
-  /*
-  EVar* evar = dynamic_cast<EVar*>(this->e1.get());
-  if(evar == nullptr) {}
-  TData tguard = (*evar->ctx)[evar->var];
-  //NOTE: currently not *really* typechecking e1
-  this->e2->ctx.insert(this->ctx.begin(),this->ctx.end());
-  this->e2->typecheck(tguard);
-
-  this->e3->ctx.insert(this->ctx.begin(),this->ctx.end());
-  this->e3->typecheck();
-  */
 }
 
 /***** EFun ******************************************************************/
@@ -888,20 +978,14 @@ shared_ptr<Exp> EFun::apply(LitData val, const char* var) {
 }
 
 shared_ptr<Typ> EFun::typecheck() {
-  //printf("TC-FUN\n");
   auto tin = this->tin;
   auto tout = this->tout;
-  //cout << "IN " << tin->display() << endl;
-  //cout << "OUT " << tout->display() << endl;
+
   this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
 
   check(this->e2->typecheck(), tout);
-  //cout << "RET " << make_shared<TFun>(tin, tout)->display() << endl;
-  TFun* tfun;
-  if((tfun = dynamic_cast<TFun*>(this->e2->typecheck().get())) != nullptr) {
-    //tout = tfun->tout;
-  }
+
   return make_shared<TFun>(tin, tout);
 }
 
@@ -931,12 +1015,8 @@ shared_ptr<Exp> EFix::apply(LitData val, const char* var) {
 }
 
 shared_ptr<Typ> EFix::typecheck() {
-  //printf("TC-EFIX\n");
   auto tin = this->tin;
   auto tout = this->tout;
-  //printf("EFix context to be pushed down: ");
-  //for(auto const &kv : this->ctx)
-  //cout << "Key: " << kv.first << ", Value: " << kv.second->display() << endl;
 
   this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
@@ -950,10 +1030,8 @@ EApp::EApp(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
 
 LitData EApp::eval() {
   typecheck();
-  //printf("EAPP typecheck successful\n");
   LitData e1d = e1->eval();
   LitData e2d = e2->eval();
-  //cout << "Application: " << *this->display() << endl;
   if(e1d.type == funval) {
     LitData vardata = e1d.data.fun->e1->eval();
     if(vardata.type == strval) {
@@ -987,13 +1065,10 @@ void EApp::subst(LitData val, const char* var) {
   this->e2->subst(val, var);
 }
 shared_ptr<Typ> EApp::typecheck() {
-  //printf("TC-APP\n");
   TFun* tfun;
   shared_ptr<Typ> tin, tout;
   this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
-  //cout << "Expression to be typechecked: " << *this->e1->display() << endl;
   shared_ptr<Typ> t1 = this->e1->typecheck();
-  //cout << "This should be a function: " << t1->display() << endl;
   if((tfun = dynamic_cast<TFun*>(t1.get())) != nullptr) {
     tin = tfun->tin;
     this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
@@ -1001,7 +1076,7 @@ shared_ptr<Typ> EApp::typecheck() {
     tout = tfun->tout;
     return tout;
   } else {
-    cerr << "Expected function as first argument, given " << t1->display() << endl;
+    cerr << "EApp typecheck failed. Expected function as first argument, given " << t1->display() << endl;
     exit(EXIT_FAILURE);
   }
 }
@@ -1065,7 +1140,7 @@ shared_ptr<Typ> EFst::typecheck() {
   if(tpair != nullptr) {
     return tpair->t1;
   } else {
-    cerr << "Expected EPair, given " <<  this->e << endl;
+    cerr << "Expected EPair in EFst, given " <<  this->e << endl;
     exit(EXIT_FAILURE);
   }
 }
@@ -1105,7 +1180,7 @@ shared_ptr<Typ> ESnd::typecheck() {
   if(tpair != nullptr) {
     return tpair->t2;
   } else {
-    cerr << "Expected TPair, given " <<  this->e->typecheck()->display() << endl;
+    cerr << "Expected TPair in ESnd, given " <<  this->e->typecheck()->display() << endl;
     exit(EXIT_FAILURE);
   }
 }
@@ -1116,22 +1191,18 @@ ERef::ERef(shared_ptr<Exp> _e) : e(_e) { }
 
 LitData ERef::eval() {
   typecheck();
-  //printf("Pre-alloc: %d\n", g_stack_next_alloc);
+
   unsigned int addr = ptr_alloc();
-  //printf("Allocated: %d\n", addr);
-  //printf("Post-alloc: %d\n", g_stack_next_alloc);
   auto data = this->e->eval();
   set_ptr(addr, make_shared<LitData>(data));
   auto eptr = make_shared<EPtr>(addr, this->e->typecheck());
-  //eptr->self = eptr; //to prevent this from being destroyed lol?
-  //cout << "can we print it herept2?? " << *eptr->eval().data.fun->display() << endl;
+
   eptr->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
   LitData ld;
   ld.type = ptrval;
   ld.data.ptr = eptr.get();
   ld.data.ptr->self = eptr; //to prevent eptr from being destroyed lol
   return ld;
-  //return make_data(eptr->self);
 }
 
 void ERef::subst(LitData val, const char* var) {
@@ -1149,18 +1220,12 @@ EDeref::EDeref(shared_ptr<Exp> _e) : e(_e) { }
 
 LitData EDeref::eval() {
   typecheck();
-  //EPtr* eptr = this->e->eval().data.ptr;
-  /*
-  EVar* eref = dynamic_cast<EVar*>(this->e.get());
-  if(eref != nullptr) {
-    printf("Welp, I guess it's a var...");
-  }
-  */
+
   EPtr* eptr = dynamic_cast<EPtr*>(this->e->eval().data.ptr);
   if(eptr != nullptr) {
     return *get_ptr(eptr->addr);
   } else {
-    cerr << "Expected e to be EPtr... Given " << this->e << endl;
+    cerr << "Expected e in deref to be EPtr... Given " << this->e << endl;
     exit(EXIT_FAILURE);
   }
 }
@@ -1171,40 +1236,33 @@ void EDeref::subst(LitData val, const char* var) {
 
 shared_ptr<Typ> EDeref::typecheck() {
   this->e->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
-  //cout << "Expression: ";
-  //cout << this->e << endl;
-  //cout << this->e->eval() << endl;
+
   TRef* tref = dynamic_cast<TRef*>(this->e->typecheck().get());
   if(tref != nullptr) {
     return tref->t;
   } else {
-    /* NOTE:OLD
-    //check if ERef hidden by EVar
-    LitData edata = this->e->eval();
-    if(edata.type == pairval) {
-    epair = edata.data.pair;
-    return epair->e2->eval();
-  }
-  */
-  cerr << "Typecheck error:\n";
-  cerr << "Expected <t>, given " << this->e->typecheck()->display() << endl;
-  exit(EXIT_FAILURE);
+
+    cerr << "Typecheck error in deref:\n";
+    cerr << "Expected <t>, given " << this->e->typecheck()->display() << endl;
+    exit(EXIT_FAILURE);
   }
 }
 
 /***** ESet ******************************************************************/
 
 ESet::ESet(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
-
 LitData ESet::eval() {
+  EArrGet* arr;
+  if((arr = dynamic_cast<EArrGet*>(this->e1.get())) != nullptr) {
+    arr->is_get = false; //tell EArrGet to behave as a write
+  }
   typecheck();
   EPtr* eptr = this->e1->eval().data.ptr;
-  //EPtr* eptr = dynamic_cast<EPtr*>(this->e1.get()->eval());
   if(eptr != nullptr) {
     set_ptr(eptr->addr, make_shared<LitData>(this->e2->eval()));
     return make_data(make_shared<EUnit>());
   } else {
-    cerr << "Expected e1 to be EPtr... Given " << this->e1 << endl;
+    cerr << "Expected e1 of eset to be EPtr... Given " << this->e1 << endl;
     exit(EXIT_FAILURE);
   }
 }
@@ -1262,7 +1320,6 @@ LitData EPtr::eval() {
 void EPtr::subst(LitData val, const char* var) {
   //get to var hidden by ptr
   shared_ptr<Exp> derived = data_to_exp(val).second;
-  //OLDcout << "subbin' into: " << *derived->display() << endl;
   derived->subst(val, var);
 }
 
@@ -1295,4 +1352,270 @@ shared_ptr<Typ> EWhile::typecheck() {
   check(this->guard->typecheck(), make_shared<TBool>());
 
   return make_shared<TUnit>();
+}
+
+/***** EArrRef ******************************************************************/
+
+EArrRef::EArrRef(shared_ptr<Exp> _e, shared_ptr<Typ> _t) : e(_e), t(_t) { }
+
+LitData EArrRef::eval() {
+  typecheck();
+  int size = this->e->eval().data.i;
+
+  unsigned int addr = ptr_alloc();
+  for(int i = 1; i < size; i++) {
+    ptr_alloc();
+  }
+  auto eptr = make_shared<EPtr>(addr, this->e->typecheck());
+
+  eptr->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  LitData ld;
+  ld.type = ptrval;
+  ld.data.ptr = eptr.get();
+  ld.data.ptr->self = eptr; //to prevent eptr from being destroyed lol
+  return ld;
+}
+
+void EArrRef::subst(LitData val, const char* var) {
+  this->e->subst(val, var);
+}
+
+shared_ptr<Typ> EArrRef::typecheck() {
+  this->e->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  check(this->e->typecheck(), make_shared<TInt>());
+
+  return make_shared<TArray>(this->t);
+}
+
+/***** EArrGet ******************************************************************/
+
+EArrGet::EArrGet(shared_ptr<Exp> _arr, shared_ptr<Exp> _index) : arr(_arr), index(_index), is_get(true) { }
+
+LitData EArrGet::eval() {
+  typecheck();
+  int i = this->index->eval().data.i;
+  EPtr* eptr = dynamic_cast<EPtr*>(this->arr->eval().data.ptr);
+  if(eptr != nullptr) {
+    if(!this->is_get) {
+      auto eptr_index = make_shared<EPtr>(eptr->addr + i, eptr->t);
+      LitData ld;
+      ld.type = ptrval;
+      ld.data.ptr = eptr_index.get();
+      ld.data.ptr->self = eptr_index;
+      return ld;
+    }
+    auto ret = get_ptr(eptr->addr + i); //zero indexed
+    if(ret == nullptr) {
+      return make_data(make_shared<EUnit>());
+    } else {
+      return *ret;
+    }
+  } else {
+    cerr << "Expected arr in arrget to be EPtr... Given " << this->arr << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+void EArrGet::subst(LitData val, const char* var) {
+  this->arr->subst(val, var);
+  this->index->subst(val, var);
+}
+
+shared_ptr<Typ> EArrGet::typecheck() {
+  this->arr->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  this->index->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+
+  TArray* tarray = dynamic_cast<TArray*>(this->arr->typecheck().get());
+  if(tarray != nullptr) {
+    check(this->index->typecheck(), make_shared<TInt>());
+    if(this->is_get) {
+      return tarray->t;
+    } else {
+      return make_shared<TRef>(tarray->t);
+    }
+  } else {
+    cerr << "Typecheck error in arrget:\n";
+    cerr << "Expected <t>, given " << this->arr->typecheck()->display() << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+/***** EArrSet ******************************************************************/
+
+EArrSet::EArrSet(shared_ptr<Exp> _arr, shared_ptr<Exp> _index) : arr(_arr), index(_index) { }
+
+LitData EArrSet::eval() {
+  typecheck();
+
+  int i = this->index->eval().data.i;
+  EPtr* eptr = dynamic_cast<EPtr*>(this->arr->eval().data.ptr);
+
+  if(eptr != nullptr) {
+    auto ret = get_ptr(eptr->addr + i); //zero indexed
+    if(ret == nullptr) {
+      return make_data(make_shared<EUnit>());
+    } else {
+      return *ret;
+    }
+  } else {
+    cerr << "Expected arr in arrset to be EPtr... Given " << this->arr << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+void EArrSet::subst(LitData val, const char* var) {
+  this->arr->subst(val, var);
+  this->index->subst(val, var);
+}
+
+shared_ptr<Typ> EArrSet::typecheck() {
+  this->arr->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  this->index->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+
+  TArray* tarray = dynamic_cast<TArray*>(this->arr->typecheck().get());
+  if(tarray != nullptr) {
+    check(this->index->typecheck(), make_shared<TInt>());
+    return make_shared<TArrGet>(tarray->t);
+  } else {
+    cerr << "Typecheck error in array set:\n";
+    cerr << "Expected <t>, given " << this->arr->typecheck()->display() << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+/***** EList ******************************************************************/
+
+EList::EList(shared_ptr<Typ> _t) : t(_t), e(nullptr), data(nullptr) { }
+EList::EList(shared_ptr<Exp> _e, shared_ptr<LitData> _data) : t(_e->typecheck()), e(_e), data(_data) { }
+EList::EList(shared_ptr<Exp> _e, shared_ptr<Typ> _t) : t(_t), e(_e) { }
+
+LitData EList::eval() {
+  LitData ld;
+  ld.type = listval;
+  ld.data.lst = this;
+  return ld;
+}
+
+void EList::subst(LitData val, const char* var) {
+  if(this->e != nullptr) {
+    this->e->subst(val, var);
+  }
+}
+
+shared_ptr<Typ> EList::typecheck() {
+  return make_shared<TList>(this->t);
+}
+
+/***** ECons ******************************************************************/
+
+ECons::ECons(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2) : e1(_e1), e2(_e2) { }
+
+LitData ECons::eval() {
+  typecheck();
+  LitData e1d = e1->eval();
+  EList* head = e2->eval().data.lst;
+  auto new_head = make_shared<EList>(head->self, e1->typecheck());
+  new_head->data = make_shared<LitData>(e1d);
+
+  LitData ret;
+  ret.type = listval;
+  ret.data.lst = new_head.get();
+  ret.data.lst->self = new_head; //let our new head persist beyond this context!
+  return ret;
+}
+
+void ECons::subst(LitData val, const char* var) {
+  this->e1->subst(val, var);
+  this->e2->subst(val, var);
+}
+
+shared_ptr<Typ> ECons::typecheck() {
+  this->e1->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  this->e2->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  auto t1 = this->e1->typecheck();
+  auto t2 = this->e2->typecheck();
+  check(t2, make_shared<TList>(t1));
+  return t2;
+}
+
+/***** ECar ******************************************************************/
+
+ECar::ECar(shared_ptr<Exp> _e) : e(_e) { }
+
+LitData ECar::eval() {
+  typecheck();
+
+  EList* head = e->eval().data.lst;
+  return *head->data;
+}
+
+void ECar::subst(LitData val, const char* var) {
+  this->e->subst(val, var);
+}
+
+shared_ptr<Typ> ECar::typecheck() {
+  this->e->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  TList* tlist = dynamic_cast<TList*>(this->e->typecheck().get());
+  if(tlist != nullptr) {
+    return tlist->t;
+  } else {
+    cerr << "Typecheck error:" << endl;
+    cerr << "Car expected TList, given " << this->e->typecheck()->display() << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+/***** ECdr ******************************************************************/
+
+ECdr::ECdr(shared_ptr<Exp> _e) : e(_e) { }
+
+LitData ECdr::eval() {
+  typecheck();
+  EList* head = e->eval().data.lst;
+  return head->e->eval();
+}
+
+void ECdr::subst(LitData val, const char* var) {
+  this->e->subst(val, var);
+}
+
+shared_ptr<Typ> ECdr::typecheck() {
+  this->e->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  TList* tlist = dynamic_cast<TList*>(this->e->typecheck().get());
+  if(tlist != nullptr) {
+    return tlist->t;
+  } else {
+    cerr << "Typecheck error:" << endl;
+    cerr << "Cdr expected TList, given " << this->e->typecheck()->display() << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+/***** EEmpty ******************************************************************/
+
+EEmpty::EEmpty(shared_ptr<Exp> _e) : e(_e) { }
+
+LitData EEmpty::eval() {
+  typecheck();
+  EList* head = e->eval().data.lst;
+  LitData ld;
+  ld.type = bval;
+  ld.data.b = head->e == nullptr && head->data == nullptr;
+  return ld;
+}
+
+void EEmpty::subst(LitData val, const char* var) {
+  this->e->subst(val, var);
+}
+
+shared_ptr<Typ> EEmpty::typecheck() {
+  this->e->ctx.insert(this->ctx.begin(),this->ctx.end()); //union of contexts
+  TList* tlist = dynamic_cast<TList*>(this->e->typecheck().get());
+  if(tlist != nullptr) {
+    return make_shared<TBool>();
+  } else {
+    cerr << "Typecheck error:" << endl;
+    cerr << "Empty? expected TList, given " << this->e->typecheck()->display() << endl;
+    exit(EXIT_FAILURE);
+  }
 }

@@ -1,8 +1,12 @@
 # Compiler
 #### Created by Ben Gafford
 Compiler (being) built in C++.  
-
-More details to come in the future.  
+Mastery components completed:
+* githooks
+* line-and-column error information
+* lists
+* arrays
+* second final project addition (repl & multiline nested comments)
 
 ## Language Syntax
 Language is defined as the following:   
@@ -11,13 +15,16 @@ e ::= (e) | n | b | e1 (+) e2 | if e1 then e2 else e3
     | x | let x : t = e1 in e2 | fun (x:t1) : t2 |-> e | fix f (x:t1) : t2 |-> e | e1 e2
     | () | (e1 . e2) | fst e | snd e
     | ref e | e1 : e2 | #e | e1 ; e2
-    | while e1 do e2 end
+    | while e1 do e2 end | new t[n] | e1[e2] | e1 := e2
+    | {} : t | e1 :: e2 | car e | cdr e | empty? e
 ```
 
 ## Types
 Types defined as the following:
 ```
-t ::= int | bool | unit | <t> | t1 -> t2 | t1 * t2
+t ::= int | bool | unit | <t> 
+    | t1 -> t2 | t1 * t2 | array<t>
+    | {t}
 ```
 
 ## Dependencies
@@ -39,11 +46,18 @@ t ::= int | bool | unit | <t> | t1 -> t2 | t1 * t2
 Compiler: 
 * parse and interpret valid expressions from text files given by `filename` 
 ```
-compiler [flags] [filename]  
+usage: compiler [flags] [filename]
 Available flags:  
   --parse   compiler processes input through the parsing phase, printing the 
   resulting abstract syntax tree in the form of an S-expression
+  --help    print relevant options
+  --debug   print additional debugging information during lexing
 ``` 
+Repl:
+* interative read-and-print-loop implemented using ncurses
+```
+usage: repl [no-args]
+```
 
 ## Changelog
 ### v0.0.1 (1/29/2018)
@@ -80,3 +94,18 @@ Available flags:
 * Added state and relevant types and expressions
   * References, dereference operator, while loops, statement sequencing
 * Added basic REPL infrastructure -- TODO: actually compile and display user input
+
+### v1.0.0 (3/20/2018)
+* Added arrays, relevant operations, and tests
+* Fully implemented repl
+* Added row and column information to lexing phase error reporting
+* Added lists, relevant operations, and tests
+* Multiline comments updated
+* Fixed various bugs
+* TODO: 
+  * Add compile-time array access bound checking
+  * Make some quality of life changes to repl (fully implement delete / cursor usage)
+  * Further develop operator precedence to make parenthesization less necessary for disambiguation of more questionable operators.
+  
+  
+

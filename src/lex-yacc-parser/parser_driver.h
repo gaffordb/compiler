@@ -21,7 +21,7 @@ public:
     //debug param: 0 for no debug info, > 0 for debug
     shared_ptr<Exp> parse(int debug);
 
-    void error(const std::string &m);
+    void error(const yy::parser::location_type &l, const std::string &m);
 
     // NOTE: Implemented in scanner.l
     void scan_begin();

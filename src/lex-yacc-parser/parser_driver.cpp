@@ -6,8 +6,8 @@ parser_driver::~parser_driver() { }
 
 shared_ptr<Exp> parser_driver::parse(int debug) {
     scan_begin();
-    //instantiate to deal with no expression case
-    //not really sure why this works
+
+    //for some reason this fixes compiler error w/ empty file?
     shared_ptr<Exp> ret = make_shared<EVar>("");
     yy::parser parser (*this, &ret);
 
@@ -18,6 +18,7 @@ shared_ptr<Exp> parser_driver::parse(int debug) {
     return ret;
 }
 
-void parser_driver::error (const std::string &m) {
-    std::cerr << m << std::endl;
+void parser_driver::error (const yy::parser::location_type &l, const std::string &m) {
+    std::cerr << "Interpreter Error: (row.col)" << endl;
+    std::cerr << "From " << l.begin << " to " << l.end << " : " << m << std::endl;
 }

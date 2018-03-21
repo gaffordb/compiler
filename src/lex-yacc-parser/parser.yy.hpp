@@ -63,7 +63,7 @@ using namespace std;
 # include <string>
 # include <vector>
 # include "stack.hh"
-
+# include "location.hh"
 #include <typeinfo>
 #ifndef YYASSERT
 # include <cassert>
@@ -320,11 +320,14 @@ namespace yy {
 #else
     typedef YYSTYPE semantic_type;
 #endif
+    /// Symbol locations.
+    typedef location location_type;
 
     /// Syntax errors thrown from user actions.
     struct syntax_error : std::runtime_error
     {
-      syntax_error (const std::string& m);
+      syntax_error (const location_type& l, const std::string& m);
+      location_type location;
     };
 
     /// Tokens.
@@ -368,9 +371,20 @@ namespace yy {
         TOK_WHILE = 290,
         TOK_DO = 291,
         TOK_ENDL = 292,
-        TOK_INT = 293,
-        TOK_BOOL = 294,
-        TOK_VAR = 295
+        TOK_ARRAY = 293,
+        TOK_NEW = 294,
+        TOK_LBRACK = 295,
+        TOK_RBRACK = 296,
+        TOK_CLBRACK = 297,
+        TOK_CRBRACK = 298,
+        TOK_NIL = 299,
+        TOK_CONS = 300,
+        TOK_CAR = 301,
+        TOK_CDR = 302,
+        TOK_EMPTY = 303,
+        TOK_INT = 304,
+        TOK_BOOL = 305,
+        TOK_VAR = 306
       };
     };
 
@@ -391,7 +405,7 @@ namespace yy {
     /// Expects its Base type to provide access to the symbol type
     /// via type_get().
     ///
-    /// Provide access to semantic value.
+    /// Provide access to semantic value and location.
     template <typename Base>
     struct basic_symbol : Base
     {
@@ -406,22 +420,23 @@ namespace yy {
 
       /// Constructor for valueless symbols, and symbols from each type.
 
-  basic_symbol (typename Base::kind_type t);
+  basic_symbol (typename Base::kind_type t, const location_type& l);
 
-  basic_symbol (typename Base::kind_type t, const  shared_ptr<Exp>  v);
+  basic_symbol (typename Base::kind_type t, const  shared_ptr<Exp>  v, const location_type& l);
 
-  basic_symbol (typename Base::kind_type t, const  shared_ptr<Typ>  v);
+  basic_symbol (typename Base::kind_type t, const  shared_ptr<Typ>  v, const location_type& l);
 
-  basic_symbol (typename Base::kind_type t, const bool v);
+  basic_symbol (typename Base::kind_type t, const bool v, const location_type& l);
 
-  basic_symbol (typename Base::kind_type t, const const char* v);
+  basic_symbol (typename Base::kind_type t, const const char* v, const location_type& l);
 
-  basic_symbol (typename Base::kind_type t, const int v);
+  basic_symbol (typename Base::kind_type t, const int v, const location_type& l);
 
 
       /// Constructor for symbols with semantic value.
       basic_symbol (typename Base::kind_type t,
-                    const semantic_type& v);
+                    const semantic_type& v,
+                    const location_type& l);
 
       /// Destroy the symbol.
       ~basic_symbol ();
@@ -437,6 +452,9 @@ namespace yy {
 
       /// The semantic value.
       semantic_type value;
+
+      /// The location.
+      location_type location;
 
     private:
       /// Assignment operator.
@@ -483,159 +501,203 @@ namespace yy {
     // Symbol constructors declarations.
     static inline
     symbol_type
-    make_END ();
+    make_END (const location_type& l);
 
     static inline
     symbol_type
-    make_PLUS ();
+    make_PLUS (const location_type& l);
 
     static inline
     symbol_type
-    make_MINUS ();
+    make_MINUS (const location_type& l);
 
     static inline
     symbol_type
-    make_MULTIPLY ();
+    make_MULTIPLY (const location_type& l);
 
     static inline
     symbol_type
-    make_DIVIDE ();
+    make_DIVIDE (const location_type& l);
 
     static inline
     symbol_type
-    make_IF ();
+    make_IF (const location_type& l);
 
     static inline
     symbol_type
-    make_THEN ();
+    make_THEN (const location_type& l);
 
     static inline
     symbol_type
-    make_ELSE ();
+    make_ELSE (const location_type& l);
 
     static inline
     symbol_type
-    make_LEQUAL ();
+    make_LEQUAL (const location_type& l);
 
     static inline
     symbol_type
-    make_GEQUAL ();
+    make_GEQUAL (const location_type& l);
 
     static inline
     symbol_type
-    make_LET ();
+    make_LET (const location_type& l);
 
     static inline
     symbol_type
-    make_FUN ();
+    make_FUN (const location_type& l);
 
     static inline
     symbol_type
-    make_FIX ();
+    make_FIX (const location_type& l);
 
     static inline
     symbol_type
-    make_EQUALS ();
+    make_EQUALS (const location_type& l);
 
     static inline
     symbol_type
-    make_IN ();
+    make_IN (const location_type& l);
 
     static inline
     symbol_type
-    make_RARROW ();
+    make_RARROW (const location_type& l);
 
     static inline
     symbol_type
-    make_FARROW ();
+    make_FARROW (const location_type& l);
 
     static inline
     symbol_type
-    make_LPAREN ();
+    make_LPAREN (const location_type& l);
 
     static inline
     symbol_type
-    make_RPAREN ();
+    make_RPAREN (const location_type& l);
 
     static inline
     symbol_type
-    make_SMALLER ();
+    make_SMALLER (const location_type& l);
 
     static inline
     symbol_type
-    make_BIGGER ();
+    make_BIGGER (const location_type& l);
 
     static inline
     symbol_type
-    make_COLON ();
+    make_COLON (const location_type& l);
 
     static inline
     symbol_type
-    make_UNIT ();
+    make_UNIT (const location_type& l);
 
     static inline
     symbol_type
-    make_INTTYPE ();
+    make_INTTYPE (const location_type& l);
 
     static inline
     symbol_type
-    make_BOOLTYPE ();
+    make_BOOLTYPE (const location_type& l);
 
     static inline
     symbol_type
-    make_UNITTYPE ();
+    make_UNITTYPE (const location_type& l);
 
     static inline
     symbol_type
-    make_FIRST ();
+    make_FIRST (const location_type& l);
 
     static inline
     symbol_type
-    make_SECOND ();
+    make_SECOND (const location_type& l);
 
     static inline
     symbol_type
-    make_DOT ();
+    make_DOT (const location_type& l);
 
     static inline
     symbol_type
-    make_SEMICOLON ();
+    make_SEMICOLON (const location_type& l);
 
     static inline
     symbol_type
-    make_POUNDO ();
+    make_POUNDO (const location_type& l);
 
     static inline
     symbol_type
-    make_SETTER ();
+    make_SETTER (const location_type& l);
 
     static inline
     symbol_type
-    make_REF ();
+    make_REF (const location_type& l);
 
     static inline
     symbol_type
-    make_WHILE ();
+    make_WHILE (const location_type& l);
 
     static inline
     symbol_type
-    make_DO ();
+    make_DO (const location_type& l);
 
     static inline
     symbol_type
-    make_ENDL ();
+    make_ENDL (const location_type& l);
 
     static inline
     symbol_type
-    make_INT (const int& v);
+    make_ARRAY (const location_type& l);
 
     static inline
     symbol_type
-    make_BOOL (const bool& v);
+    make_NEW (const location_type& l);
 
     static inline
     symbol_type
-    make_VAR (const const char*& v);
+    make_LBRACK (const location_type& l);
+
+    static inline
+    symbol_type
+    make_RBRACK (const location_type& l);
+
+    static inline
+    symbol_type
+    make_CLBRACK (const location_type& l);
+
+    static inline
+    symbol_type
+    make_CRBRACK (const location_type& l);
+
+    static inline
+    symbol_type
+    make_NIL (const location_type& l);
+
+    static inline
+    symbol_type
+    make_CONS (const location_type& l);
+
+    static inline
+    symbol_type
+    make_CAR (const location_type& l);
+
+    static inline
+    symbol_type
+    make_CDR (const location_type& l);
+
+    static inline
+    symbol_type
+    make_EMPTY (const location_type& l);
+
+    static inline
+    symbol_type
+    make_INT (const int& v, const location_type& l);
+
+    static inline
+    symbol_type
+    make_BOOL (const bool& v, const location_type& l);
+
+    static inline
+    symbol_type
+    make_VAR (const const char*& v, const location_type& l);
 
 
     /// Build a parser object.
@@ -661,8 +723,9 @@ namespace yy {
 #endif
 
     /// Report a syntax error.
+    /// \param loc    where the syntax error is found.
     /// \param msg    a description of the syntax error.
-    virtual void error (const std::string& msg);
+    virtual void error (const location_type& loc, const std::string& msg);
 
     /// Report a syntax error.
     void error (const syntax_error& err);
@@ -841,12 +904,12 @@ namespace yy {
     enum
     {
       yyeof_ = 0,
-      yylast_ = 655,     ///< Last index in yytable_.
+      yylast_ = 1071,     ///< Last index in yytable_.
       yynnts_ = 5,  ///< Number of nonterminal symbols.
-      yyfinal_ = 30, ///< Termination state number.
+      yyfinal_ = 46, ///< Termination state number.
       yyterror_ = 1,
       yyerrcode_ = 256,
-      yyntokens_ = 41  ///< Number of tokens.
+      yyntokens_ = 52  ///< Number of tokens.
     };
 
 
@@ -893,9 +956,10 @@ namespace yy {
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36,    37,    38,    39,    40
+      35,    36,    37,    38,    39,    40,    41,    42,    43,    44,
+      45,    46,    47,    48,    49,    50,    51
     };
-    const unsigned int user_token_number_max_ = 295;
+    const unsigned int user_token_number_max_ = 306;
     const token_number_type undef_token_ = 2;
 
     if (static_cast<int>(t) <= yyeof_)
@@ -907,8 +971,9 @@ namespace yy {
   }
 
   inline
-  parser::syntax_error::syntax_error (const std::string& m)
+  parser::syntax_error::syntax_error (const location_type& l, const std::string& m)
     : std::runtime_error (m)
+    , location (l)
   {}
 
   // basic_symbol.
@@ -923,27 +988,28 @@ namespace yy {
   parser::basic_symbol<Base>::basic_symbol (const basic_symbol& other)
     : Base (other)
     , value ()
+    , location (other.location)
   {
       switch (other.type_get ())
     {
-      case 43: // exp1
-      case 44: // exp
+      case 54: // exp1
+      case 55: // exp
         value.copy<  shared_ptr<Exp>  > (other.value);
         break;
 
-      case 45: // typ
+      case 56: // typ
         value.copy<  shared_ptr<Typ>  > (other.value);
         break;
 
-      case 39: // "vbool"
+      case 50: // "vbool"
         value.copy< bool > (other.value);
         break;
 
-      case 40: // "var"
+      case 51: // "var"
         value.copy< const char* > (other.value);
         break;
 
-      case 38: // "vint"
+      case 49: // "vint"
         value.copy< int > (other.value);
         break;
 
@@ -956,31 +1022,32 @@ namespace yy {
 
   template <typename Base>
   inline
-  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const semantic_type& v)
+  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const semantic_type& v, const location_type& l)
     : Base (t)
     , value ()
+    , location (l)
   {
     (void) v;
       switch (this->type_get ())
     {
-      case 43: // exp1
-      case 44: // exp
+      case 54: // exp1
+      case 55: // exp
         value.copy<  shared_ptr<Exp>  > (v);
         break;
 
-      case 45: // typ
+      case 56: // typ
         value.copy<  shared_ptr<Typ>  > (v);
         break;
 
-      case 39: // "vbool"
+      case 50: // "vbool"
         value.copy< bool > (v);
         break;
 
-      case 40: // "var"
+      case 51: // "var"
         value.copy< const char* > (v);
         break;
 
-      case 38: // "vint"
+      case 49: // "vint"
         value.copy< int > (v);
         break;
 
@@ -993,39 +1060,45 @@ namespace yy {
   // Implementation of basic_symbol constructor for each type.
 
   template <typename Base>
-  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t)
+  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const location_type& l)
     : Base (t)
     , value ()
+    , location (l)
   {}
 
   template <typename Base>
-  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const  shared_ptr<Exp>  v)
+  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const  shared_ptr<Exp>  v, const location_type& l)
     : Base (t)
     , value (v)
+    , location (l)
   {}
 
   template <typename Base>
-  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const  shared_ptr<Typ>  v)
+  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const  shared_ptr<Typ>  v, const location_type& l)
     : Base (t)
     , value (v)
+    , location (l)
   {}
 
   template <typename Base>
-  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const bool v)
+  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const bool v, const location_type& l)
     : Base (t)
     , value (v)
+    , location (l)
   {}
 
   template <typename Base>
-  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const const char* v)
+  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const const char* v, const location_type& l)
     : Base (t)
     , value (v)
+    , location (l)
   {}
 
   template <typename Base>
-  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const int v)
+  parser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const int v, const location_type& l)
     : Base (t)
     , value (v)
+    , location (l)
   {}
 
 
@@ -1054,24 +1127,24 @@ namespace yy {
     // Type destructor.
     switch (yytype)
     {
-      case 43: // exp1
-      case 44: // exp
+      case 54: // exp1
+      case 55: // exp
         value.template destroy<  shared_ptr<Exp>  > ();
         break;
 
-      case 45: // typ
+      case 56: // typ
         value.template destroy<  shared_ptr<Typ>  > ();
         break;
 
-      case 39: // "vbool"
+      case 50: // "vbool"
         value.template destroy< bool > ();
         break;
 
-      case 40: // "var"
+      case 51: // "var"
         value.template destroy< const char* > ();
         break;
 
-      case 38: // "vint"
+      case 49: // "vint"
         value.template destroy< int > ();
         break;
 
@@ -1098,24 +1171,24 @@ namespace yy {
     super_type::move(s);
       switch (this->type_get ())
     {
-      case 43: // exp1
-      case 44: // exp
+      case 54: // exp1
+      case 55: // exp
         value.move<  shared_ptr<Exp>  > (s.value);
         break;
 
-      case 45: // typ
+      case 56: // typ
         value.move<  shared_ptr<Typ>  > (s.value);
         break;
 
-      case 39: // "vbool"
+      case 50: // "vbool"
         value.move< bool > (s.value);
         break;
 
-      case 40: // "var"
+      case 51: // "var"
         value.move< const char* > (s.value);
         break;
 
-      case 38: // "vint"
+      case 49: // "vint"
         value.move< int > (s.value);
         break;
 
@@ -1123,6 +1196,7 @@ namespace yy {
         break;
     }
 
+    location = s.location;
   }
 
   // by_type.
@@ -1177,249 +1251,316 @@ namespace yy {
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
      285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
-     295
+     295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
+     305,   306
     };
     return static_cast<token_type> (yytoken_number_[type]);
   }
   // Implementation of make_symbol for each symbol type.
   parser::symbol_type
-  parser::make_END ()
+  parser::make_END (const location_type& l)
   {
-    return symbol_type (token::TOK_END);
+    return symbol_type (token::TOK_END, l);
   }
 
   parser::symbol_type
-  parser::make_PLUS ()
+  parser::make_PLUS (const location_type& l)
   {
-    return symbol_type (token::TOK_PLUS);
+    return symbol_type (token::TOK_PLUS, l);
   }
 
   parser::symbol_type
-  parser::make_MINUS ()
+  parser::make_MINUS (const location_type& l)
   {
-    return symbol_type (token::TOK_MINUS);
+    return symbol_type (token::TOK_MINUS, l);
   }
 
   parser::symbol_type
-  parser::make_MULTIPLY ()
+  parser::make_MULTIPLY (const location_type& l)
   {
-    return symbol_type (token::TOK_MULTIPLY);
+    return symbol_type (token::TOK_MULTIPLY, l);
   }
 
   parser::symbol_type
-  parser::make_DIVIDE ()
+  parser::make_DIVIDE (const location_type& l)
   {
-    return symbol_type (token::TOK_DIVIDE);
+    return symbol_type (token::TOK_DIVIDE, l);
   }
 
   parser::symbol_type
-  parser::make_IF ()
+  parser::make_IF (const location_type& l)
   {
-    return symbol_type (token::TOK_IF);
+    return symbol_type (token::TOK_IF, l);
   }
 
   parser::symbol_type
-  parser::make_THEN ()
+  parser::make_THEN (const location_type& l)
   {
-    return symbol_type (token::TOK_THEN);
+    return symbol_type (token::TOK_THEN, l);
   }
 
   parser::symbol_type
-  parser::make_ELSE ()
+  parser::make_ELSE (const location_type& l)
   {
-    return symbol_type (token::TOK_ELSE);
+    return symbol_type (token::TOK_ELSE, l);
   }
 
   parser::symbol_type
-  parser::make_LEQUAL ()
+  parser::make_LEQUAL (const location_type& l)
   {
-    return symbol_type (token::TOK_LEQUAL);
+    return symbol_type (token::TOK_LEQUAL, l);
   }
 
   parser::symbol_type
-  parser::make_GEQUAL ()
+  parser::make_GEQUAL (const location_type& l)
   {
-    return symbol_type (token::TOK_GEQUAL);
+    return symbol_type (token::TOK_GEQUAL, l);
   }
 
   parser::symbol_type
-  parser::make_LET ()
+  parser::make_LET (const location_type& l)
   {
-    return symbol_type (token::TOK_LET);
+    return symbol_type (token::TOK_LET, l);
   }
 
   parser::symbol_type
-  parser::make_FUN ()
+  parser::make_FUN (const location_type& l)
   {
-    return symbol_type (token::TOK_FUN);
+    return symbol_type (token::TOK_FUN, l);
   }
 
   parser::symbol_type
-  parser::make_FIX ()
+  parser::make_FIX (const location_type& l)
   {
-    return symbol_type (token::TOK_FIX);
+    return symbol_type (token::TOK_FIX, l);
   }
 
   parser::symbol_type
-  parser::make_EQUALS ()
+  parser::make_EQUALS (const location_type& l)
   {
-    return symbol_type (token::TOK_EQUALS);
+    return symbol_type (token::TOK_EQUALS, l);
   }
 
   parser::symbol_type
-  parser::make_IN ()
+  parser::make_IN (const location_type& l)
   {
-    return symbol_type (token::TOK_IN);
+    return symbol_type (token::TOK_IN, l);
   }
 
   parser::symbol_type
-  parser::make_RARROW ()
+  parser::make_RARROW (const location_type& l)
   {
-    return symbol_type (token::TOK_RARROW);
+    return symbol_type (token::TOK_RARROW, l);
   }
 
   parser::symbol_type
-  parser::make_FARROW ()
+  parser::make_FARROW (const location_type& l)
   {
-    return symbol_type (token::TOK_FARROW);
+    return symbol_type (token::TOK_FARROW, l);
   }
 
   parser::symbol_type
-  parser::make_LPAREN ()
+  parser::make_LPAREN (const location_type& l)
   {
-    return symbol_type (token::TOK_LPAREN);
+    return symbol_type (token::TOK_LPAREN, l);
   }
 
   parser::symbol_type
-  parser::make_RPAREN ()
+  parser::make_RPAREN (const location_type& l)
   {
-    return symbol_type (token::TOK_RPAREN);
+    return symbol_type (token::TOK_RPAREN, l);
   }
 
   parser::symbol_type
-  parser::make_SMALLER ()
+  parser::make_SMALLER (const location_type& l)
   {
-    return symbol_type (token::TOK_SMALLER);
+    return symbol_type (token::TOK_SMALLER, l);
   }
 
   parser::symbol_type
-  parser::make_BIGGER ()
+  parser::make_BIGGER (const location_type& l)
   {
-    return symbol_type (token::TOK_BIGGER);
+    return symbol_type (token::TOK_BIGGER, l);
   }
 
   parser::symbol_type
-  parser::make_COLON ()
+  parser::make_COLON (const location_type& l)
   {
-    return symbol_type (token::TOK_COLON);
+    return symbol_type (token::TOK_COLON, l);
   }
 
   parser::symbol_type
-  parser::make_UNIT ()
+  parser::make_UNIT (const location_type& l)
   {
-    return symbol_type (token::TOK_UNIT);
+    return symbol_type (token::TOK_UNIT, l);
   }
 
   parser::symbol_type
-  parser::make_INTTYPE ()
+  parser::make_INTTYPE (const location_type& l)
   {
-    return symbol_type (token::TOK_INTTYPE);
+    return symbol_type (token::TOK_INTTYPE, l);
   }
 
   parser::symbol_type
-  parser::make_BOOLTYPE ()
+  parser::make_BOOLTYPE (const location_type& l)
   {
-    return symbol_type (token::TOK_BOOLTYPE);
+    return symbol_type (token::TOK_BOOLTYPE, l);
   }
 
   parser::symbol_type
-  parser::make_UNITTYPE ()
+  parser::make_UNITTYPE (const location_type& l)
   {
-    return symbol_type (token::TOK_UNITTYPE);
+    return symbol_type (token::TOK_UNITTYPE, l);
   }
 
   parser::symbol_type
-  parser::make_FIRST ()
+  parser::make_FIRST (const location_type& l)
   {
-    return symbol_type (token::TOK_FIRST);
+    return symbol_type (token::TOK_FIRST, l);
   }
 
   parser::symbol_type
-  parser::make_SECOND ()
+  parser::make_SECOND (const location_type& l)
   {
-    return symbol_type (token::TOK_SECOND);
+    return symbol_type (token::TOK_SECOND, l);
   }
 
   parser::symbol_type
-  parser::make_DOT ()
+  parser::make_DOT (const location_type& l)
   {
-    return symbol_type (token::TOK_DOT);
+    return symbol_type (token::TOK_DOT, l);
   }
 
   parser::symbol_type
-  parser::make_SEMICOLON ()
+  parser::make_SEMICOLON (const location_type& l)
   {
-    return symbol_type (token::TOK_SEMICOLON);
+    return symbol_type (token::TOK_SEMICOLON, l);
   }
 
   parser::symbol_type
-  parser::make_POUNDO ()
+  parser::make_POUNDO (const location_type& l)
   {
-    return symbol_type (token::TOK_POUNDO);
+    return symbol_type (token::TOK_POUNDO, l);
   }
 
   parser::symbol_type
-  parser::make_SETTER ()
+  parser::make_SETTER (const location_type& l)
   {
-    return symbol_type (token::TOK_SETTER);
+    return symbol_type (token::TOK_SETTER, l);
   }
 
   parser::symbol_type
-  parser::make_REF ()
+  parser::make_REF (const location_type& l)
   {
-    return symbol_type (token::TOK_REF);
+    return symbol_type (token::TOK_REF, l);
   }
 
   parser::symbol_type
-  parser::make_WHILE ()
+  parser::make_WHILE (const location_type& l)
   {
-    return symbol_type (token::TOK_WHILE);
+    return symbol_type (token::TOK_WHILE, l);
   }
 
   parser::symbol_type
-  parser::make_DO ()
+  parser::make_DO (const location_type& l)
   {
-    return symbol_type (token::TOK_DO);
+    return symbol_type (token::TOK_DO, l);
   }
 
   parser::symbol_type
-  parser::make_ENDL ()
+  parser::make_ENDL (const location_type& l)
   {
-    return symbol_type (token::TOK_ENDL);
+    return symbol_type (token::TOK_ENDL, l);
   }
 
   parser::symbol_type
-  parser::make_INT (const int& v)
+  parser::make_ARRAY (const location_type& l)
   {
-    return symbol_type (token::TOK_INT, v);
+    return symbol_type (token::TOK_ARRAY, l);
   }
 
   parser::symbol_type
-  parser::make_BOOL (const bool& v)
+  parser::make_NEW (const location_type& l)
   {
-    return symbol_type (token::TOK_BOOL, v);
+    return symbol_type (token::TOK_NEW, l);
   }
 
   parser::symbol_type
-  parser::make_VAR (const const char*& v)
+  parser::make_LBRACK (const location_type& l)
   {
-    return symbol_type (token::TOK_VAR, v);
+    return symbol_type (token::TOK_LBRACK, l);
+  }
+
+  parser::symbol_type
+  parser::make_RBRACK (const location_type& l)
+  {
+    return symbol_type (token::TOK_RBRACK, l);
+  }
+
+  parser::symbol_type
+  parser::make_CLBRACK (const location_type& l)
+  {
+    return symbol_type (token::TOK_CLBRACK, l);
+  }
+
+  parser::symbol_type
+  parser::make_CRBRACK (const location_type& l)
+  {
+    return symbol_type (token::TOK_CRBRACK, l);
+  }
+
+  parser::symbol_type
+  parser::make_NIL (const location_type& l)
+  {
+    return symbol_type (token::TOK_NIL, l);
+  }
+
+  parser::symbol_type
+  parser::make_CONS (const location_type& l)
+  {
+    return symbol_type (token::TOK_CONS, l);
+  }
+
+  parser::symbol_type
+  parser::make_CAR (const location_type& l)
+  {
+    return symbol_type (token::TOK_CAR, l);
+  }
+
+  parser::symbol_type
+  parser::make_CDR (const location_type& l)
+  {
+    return symbol_type (token::TOK_CDR, l);
+  }
+
+  parser::symbol_type
+  parser::make_EMPTY (const location_type& l)
+  {
+    return symbol_type (token::TOK_EMPTY, l);
+  }
+
+  parser::symbol_type
+  parser::make_INT (const int& v, const location_type& l)
+  {
+    return symbol_type (token::TOK_INT, v, l);
+  }
+
+  parser::symbol_type
+  parser::make_BOOL (const bool& v, const location_type& l)
+  {
+    return symbol_type (token::TOK_BOOL, v, l);
+  }
+
+  parser::symbol_type
+  parser::make_VAR (const const char*& v, const location_type& l)
+  {
+    return symbol_type (token::TOK_VAR, v, l);
   }
 
 
 
 } // yy
-#line 1423 "src/lex-yacc-parser/parser.yy.hpp" // lalr1.cc:392
+#line 1564 "src/lex-yacc-parser/parser.yy.hpp" // lalr1.cc:392
 
 
 

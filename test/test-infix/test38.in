@@ -1,0 +1,2 @@
+let arr : array<int> = new int[5] in
+ref 5; arr[0] := 22; arr[1] := 99; arr[2] := 120; arr[0] + arr[5]
