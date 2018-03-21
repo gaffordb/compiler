@@ -71,6 +71,17 @@ using namespace std;
   WHILE       "while"
   DO          "do"
   ENDL        "end"
+  ARRAY       "array"
+  NEW         "new"
+  LBRACK      "["
+  RBRACK      "]"
+  CLBRACK     "{"
+  CRBRACK     "}"
+  NIL         "{}"
+  CONS        "::"
+  CAR         "car"
+  CDR         "cdr"
+  EMPTY       "empty?"
 ;
 
 %token <int> INT "vint"
@@ -78,11 +89,13 @@ using namespace std;
 %token <const char*> VAR "var"
 
 %right ";"
+%left "fst" "snd" "ref"
 %left ":="
 %left ">" "<" "<=" ">="
 %left "+" "-"
 %left "*" "/"
 %left "#"
+%left "(" ")"
 
 %type  < shared_ptr<Exp> > exp
 %type  < shared_ptr<Exp> > exp1
@@ -135,6 +148,13 @@ exp:
 |  exp1 ":=" exp1                  { $$ = make_shared<ESet>($1, $3);    }
 |  "#" exp1                        { $$ = make_shared<EDeref>($2);      }
 |  exp1 ";" exp1                   { $$ = make_shared<ESeq>($1, $3);    }
+|  "new" typ "[" exp1 "]"          { $$ = make_shared<EArrRef>($4, $2); }
+|  exp1 "[" exp1 "]"               { $$ = make_shared<EArrGet>($1, $3); }
+|  "{}" ":" typ                    { $$ = make_shared<EList>($3);        }
+|  exp1 "::" exp1                  { $$ = make_shared<ECons>($1, $3);   }
+|  "car" exp1                      { $$ = make_shared<ECar>($2);        }
+|  "cdr" exp1                      { $$ = make_shared<ECdr>($2);        }
+|  "empty?" exp1                   { $$ = make_shared<EEmpty>($2);      }
 
 typ:
   "int"                            { $$ = make_shared<TInt>();        }
@@ -143,6 +163,8 @@ typ:
 | typ "->" typ                     { $$ = make_shared<TFun>($1, $3);  }
 | typ "*" typ                      { $$ = make_shared<TPair>($1, $3); }
 | "<" typ ">"                      { $$ = make_shared<TRef>($2);      }
+| "array" "<" typ ">"              { $$ = make_shared<TArray>($3);    }
+| "{" typ "}"                      { $$ = make_shared<TList>($2);     }
 
 %%
 

@@ -21,18 +21,18 @@ using namespace std;
 
 string interpret(string s) {
   string ret;
-
   ofstream myfile;
-  //set up tmp file
+
   myfile.open (".tmp_to_read_187.txt");
   myfile << s;
   myfile.close();
+
   stringstream sstrm;
   parser_driver driver (".tmp_to_read_187.txt");
   shared_ptr<Exp> expr = driver.parse(0);
   sstrm << expr->eval();
+
   remove(".tmp_to_read_187.txt");
-  
   return sstrm.str();
 }
 

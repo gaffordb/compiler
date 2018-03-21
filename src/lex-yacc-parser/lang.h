@@ -12,7 +12,8 @@ enum TData {
   ival, bval,
   strval, funval,
   fixval, pairval,
-  unitval, ptrval
+  unitval, ptrval,
+  listval
 };
 
 union LData {
@@ -23,6 +24,7 @@ union LData {
   struct EFix* fix;
   struct EPair* pair;
   struct EPtr* ptr;
+  struct EList* lst;
 };
 
 struct LitData {
@@ -32,7 +34,6 @@ struct LitData {
 
 /*************************TYPES**************************************/
 struct Typ {
-  //~Typ() = default;
   virtual string display() = 0;
 };
 
@@ -61,7 +62,6 @@ struct TPair : public Typ {
 struct TFun : public Typ {
   shared_ptr<Typ> tin;
   shared_ptr<Typ> tout;
-  //TFun(TData _tin, TData _tout);
   TFun(shared_ptr<Typ> _tin, shared_ptr<Typ> _tout);
   string display();
 };
@@ -69,6 +69,24 @@ struct TFun : public Typ {
 struct TRef : public Typ {
   shared_ptr<Typ> t;
   TRef(shared_ptr<Typ> _t);
+  string display();
+};
+
+struct TArray : public Typ {
+  shared_ptr<Typ> t;
+  TArray(shared_ptr<Typ> _t);
+  string display();
+};
+
+struct TArrGet : public Typ {
+  shared_ptr<Typ> t;
+  TArrGet(shared_ptr<Typ> _t);
+  string display();
+};
+
+struct TList : public Typ {
+  shared_ptr<Typ> t;
+  TList(shared_ptr<Typ> _t);
   string display();
 };
 
@@ -80,7 +98,6 @@ struct Exp {
   virtual void subst(LitData val, const char* var) = 0;
   unordered_map<string, shared_ptr<Typ> > ctx; //mapping of vars to type
   virtual shared_ptr<Typ> typecheck() = 0;
-  //~Exp() = default;
 };
 
 struct ELit : public Exp {
@@ -330,6 +347,88 @@ struct EPtr : public Exp {
 struct EWhile : public Exp {
   shared_ptr<Exp> guard, body;
   EWhile(shared_ptr<Exp> _guard, shared_ptr<Exp> _body);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct EArrRef : public Exp {
+  shared_ptr<Exp> e;
+  shared_ptr<Typ> t;
+  EArrRef(shared_ptr<Exp> _e, shared_ptr<Typ> _t);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct EArrGet : public Exp {
+  shared_ptr<Exp> arr;
+  shared_ptr<Exp> index;
+  bool is_get;
+  EArrGet(shared_ptr<Exp> _arr, shared_ptr<Exp> _index);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct EArrSet : public Exp {
+  shared_ptr<Exp> arr;
+  shared_ptr<Exp> index;
+  EArrSet(shared_ptr<Exp> _arr, shared_ptr<Exp> _index);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct EList : public Exp {
+  shared_ptr<Typ> t;
+  shared_ptr<Exp> e; //next
+  shared_ptr<LitData> data; //payload
+  shared_ptr<Exp> self; //bullshit
+  EList(shared_ptr<Typ> _t);
+  EList(shared_ptr<Exp> _e, shared_ptr<Typ> _t);
+  EList(shared_ptr<Exp> _e, shared_ptr<LitData> _data);
+  LitData eval();
+  shared_ptr<string> display(void);
+  string display_inner(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct ECons : public Exp {
+  shared_ptr<Exp> e1, e2;
+  ECons(shared_ptr<Exp> _e1, shared_ptr<Exp> _e2);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct ECar : public Exp {
+  shared_ptr<Exp> e;
+  ECar(shared_ptr<Exp> _e);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct ECdr : public Exp {
+  shared_ptr<Exp> e;
+  ECdr(shared_ptr<Exp> _e);
+  LitData eval();
+  shared_ptr<string> display(void);
+  void subst(LitData val, const char* var);
+  shared_ptr<Typ> typecheck();
+};
+
+struct EEmpty : public Exp {
+  shared_ptr<Exp> e;
+  EEmpty(shared_ptr<Exp> _e);
   LitData eval();
   shared_ptr<string> display(void);
   void subst(LitData val, const char* var);

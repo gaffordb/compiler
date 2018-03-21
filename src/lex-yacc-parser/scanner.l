@@ -118,6 +118,29 @@ blank [ \t]
               return yy::parser::make_DO();   }
 "end"       { if(DEBUG_MODE) {printf("token: |end|\n");}
               return yy::parser::make_ENDL();   }
+"array"     { if(DEBUG_MODE) {printf("token: |array|\n");}
+              return yy::parser::make_ARRAY();   }
+"new"       { if(DEBUG_MODE) {printf("token: |new|\n");}
+              return yy::parser::make_NEW();   }
+"["         { if(DEBUG_MODE) {printf("token: |[|\n");}
+              return yy::parser::make_LBRACK();   }
+"]"         { if(DEBUG_MODE) {printf("token: |]|\n");}
+              return yy::parser::make_RBRACK();   }
+"{"         { if(DEBUG_MODE) {printf("token: |{|\n");}
+              return yy::parser::make_CLBRACK();   }
+"}"         { if(DEBUG_MODE) {printf("token: |}|\n");}
+              return yy::parser::make_CRBRACK();   }
+"{}"        { if(DEBUG_MODE) {printf("token: |{}|\n");}
+              return yy::parser::make_NIL();   }
+"::"        { if(DEBUG_MODE) {printf("token: |::|\n");}
+              return yy::parser::make_CONS();   }
+"car"       { if(DEBUG_MODE) {printf("token: |car|\n");}
+              return yy::parser::make_CAR();   }
+"cdr"       { if(DEBUG_MODE) {printf("token: |cdr|\n");}
+              return yy::parser::make_CDR();   }
+"empty?"    { if(DEBUG_MODE) {printf("token: |empty?|\n");}
+              return yy::parser::make_EMPTY();   }
+
 
 [a-zA-Z][a-zA-Z0-9]* {
   const char *yycopy = strdup(yytext);
