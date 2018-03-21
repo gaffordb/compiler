@@ -40,7 +40,7 @@ t ::= int | bool | unit | <t>
 Compiler: 
 * parse and interpret valid expressions from text files given by `filename` 
 ```
-usage: compiler [flags] [filename]  
+usage: compiler [flags] [filename]
 Available flags:  
   --parse   compiler processes input through the parsing phase, printing the 
   resulting abstract syntax tree in the form of an S-expression
