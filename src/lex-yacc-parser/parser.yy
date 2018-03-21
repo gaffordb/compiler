@@ -76,8 +76,11 @@ using namespace std;
 %token <const char*> VAR "var"
 
 %right ";"
+%left ">" "<="
 %left "+" "-"
 %left "*" "/"
+%left ":="
+%left "#"
 
 %type  < shared_ptr<Exp> > exp
 %type  < shared_ptr<Exp> > exp1

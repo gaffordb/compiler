@@ -67,7 +67,7 @@ std::pair<TData, shared_ptr<Exp> > data_to_exp(LitData ld) {
 void set_ptr(unsigned int addr, shared_ptr<LitData> val) {
   //ensure ptr has been allocated
   if(addr < g_stack_next_alloc) {
-    g_stack.insert({addr, val});
+    g_stack[addr] = val;
   } else {
     cerr << "Error: Cannot set unallocated pointer." << endl;
     exit(EXIT_FAILURE);
@@ -208,10 +208,7 @@ std::ostream& operator <<(std::ostream &strm, LitData const& ld) {
       break;
     }
     case ptrval: {
-      fprintf(stderr, "we here!\nm");
       strm << *(ld.data.ptr->display());
-      fprintf(stderr, "we heretoo!\nm");
-
       break;
     }
     default:
@@ -379,7 +376,7 @@ shared_ptr<string> EVar::display(void) {
 
 shared_ptr<string> ELet::display(void) {
   shared_ptr<string> ret = make_shared<string>();
-  *ret = "(let " + *this->e1->display() + " = " + *this->e2->display() + " in " + *this->e3->display() + ")";
+  *ret = "(let " + *this->e1->display() + " = " + *this->e2->display() + " in\n" + *this->e3->display() + ")";
   return ret;
 }
 
@@ -458,7 +455,7 @@ shared_ptr<string> EPtr::display(void) {
 
 shared_ptr<string> EWhile::display(void) {
   shared_ptr<string> ret = make_shared<string>();
-  *ret = "(while " + *this->guard->display() + " do " + *this->body->display() + ")";
+  *ret = "(while " + *this->guard->display() + " do\n" + *this->body->display() + ")";
   return ret;
 }
 
@@ -1063,7 +1060,6 @@ LitData ERef::eval() {
 }
 
 void ERef::subst(LitData val, const char* var) {
-  printf("substituting in eref??\n");
   this->e->subst(val, var);
 }
 
@@ -1079,10 +1075,12 @@ EDeref::EDeref(shared_ptr<Exp> _e) : e(_e) { }
 LitData EDeref::eval() {
   typecheck();
   //EPtr* eptr = this->e->eval().data.ptr;
+  /*
   EVar* eref = dynamic_cast<EVar*>(this->e.get());
   if(eref != nullptr) {
     printf("Welp, I guess it's a var...");
   }
+  */
   EPtr* eptr = dynamic_cast<EPtr*>(this->e->eval().data.ptr);
   if(eptr != nullptr) {
     return *get_ptr(eptr->addr);
@@ -1093,9 +1091,6 @@ LitData EDeref::eval() {
 }
 
 void EDeref::subst(LitData val, const char* var) {
-  printf("In Deref: Substituting a value into %s\n", var);
-  cout << "Value type: " << val.type << endl;
-  //cout << "Value data: " << *val.data.ptr->display() << endl; Get a real bad thing if I do this
   this->e->subst(val, var);
 }
 
