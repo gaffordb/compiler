@@ -43,13 +43,11 @@ int main(int argc, char **argv) {
           break;
         }
         case 'l': {
-          blex = true;
-          //lex
+          bdebug = true;
           break;
         }
         case 'p': {
           bparse = true;
-          //parse
           break;
         }
         case 's': {
