@@ -1,6 +1,6 @@
 # Compiler
 #### Created by Ben Gafford
-Compiler built in C++. 
+Compiler (being) built in C++.  
 Mastery components completed:
 * githooks
 * line-and-column error information
