@@ -1,16 +1,16 @@
 #!/bin/bash
 
-NUM_TESTS=18
+NUM_TESTS=43
 #sed "${NUM}q;d" file -- to get a specific line from a file
 for ((i=0; i<NUM_TESTS; i++)); do
-    echo Running test $i... 
+    echo Running test $i...
     ./bin/compiler --parse "test/test-infix/test$i.in" > tmp.txt
     OUT=$(diff tmp.txt "test/test-infix/parse/test$i.out")
     rm tmp.txt
     if [ ${#OUT} == 0 ]; then
 	echo Test $i successful.
     else
-	echo Test $i failed. 
+	echo Test $i failed.
 	exit 1
     fi
 done

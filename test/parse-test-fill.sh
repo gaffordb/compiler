@@ -1,9 +1,9 @@
 #!/bin/bash
 
-NUM_TESTS=41
+NUM_TESTS=43
 #sed "${NUM}q;d" file -- to get a specific line from a file
 for ((i=0; i<NUM_TESTS; i++)); do
-    echo Running test $i... 
+    echo Running test $i...
     ./bin/compiler --parse "test/test-infix/test$i.in" > "test/test-infix/parse/test$i.out"
 done
 exit 0
